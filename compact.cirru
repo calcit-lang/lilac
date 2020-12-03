@@ -9,12 +9,11 @@
         |main! $ quote
           defn main! () (println "\"Started.") (run-demo!)
         |reload! $ quote
-          defn reload! () (.clear js/console) (println "\"Reloaded.") (run-demo!)
+          defn reload! () (println "\"Reloaded.") (run-demo!)
         |run-demo! $ quote
           defn run-demo! ()
             let
                 result $ validate-lilac router-data (lilac-router+)
-              echo "\"running demo"
               if (:ok? result) (println "\"Passed validation!") (println $ :formatted-message result)
               dev-check "\"1" $ number+ ({} $ :x 1)
       :proc $ quote ()
@@ -30,7 +29,7 @@
                   , items
                 (list? items)
                   set items
-                :else $ do (js/console.warn "\"Unknown items") items
+                :else $ do (echo "\"Lilac warning: unknown items" items) items
         |symbol+ $ quote
           defn symbol+ (& args) ({} $ :lilac-type :symbol)
         |validate-set $ quote
@@ -50,7 +49,7 @@
                       recur (rest xs) (inc idx)
                       , result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message) (str "\"expects a set, got " $ preview-data data)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"expects a set, got " $ preview-data data)
         |validate-record $ quote
           defn validate-record (data rule coord)
             let
@@ -77,7 +76,7 @@
                           if (:ok? result) (recur $ rest xs) (, result)
               if (not $ map? data)
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message) (str "\"expects a record, got " $ preview-data data)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"expects a record, got " $ preview-data data)
                 cond
                   exact-keys? $ if (seq-equal existed-keys wanted-keys) (check-values)
                     {} (:ok? false) (:data data) (:rule rule) (:coord coord)
@@ -90,7 +89,7 @@
                       extra-keys $ seq-difference existed-keys wanted-keys
                     if (empty? extra-keys) (check-values)
                       {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                        :message $ or default-message (str "\"unexpected record keys " extra-keys "\" for " wanted-keys)
+                        :message $ either default-message (str "\"unexpected record keys " extra-keys "\" for " wanted-keys)
                   :else $ check-values
         |core-methods $ quote
           def core-methods $ {} (:boolean validate-boolean) (:string validate-string) (:nil validate-nil) (:fn validate-fn) (:keyword validate-keyword) (:symbol validate-symbol) (:number validate-number) (:vector validate-vector) (:record validate-record) (:map validate-map) (:list validate-list) (:set validate-set) (:not validate-not) (:or validate-or) (:and validate-and) (:custom validate-custom) (:component validate-component) (:is validate-is) (:optional validate-optional) (:tuple validate-tuple) (:any validate-any) (:enum validate-enum) (:pick-type validate-pick-type)
@@ -113,13 +112,13 @@
                     if (some? max-v) (<= data max-v) (, true)
                   , ok-result
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ or (get-in rule $ [] :options :message) (str "\"expects number not in the range, got " $ preview-data data)
+                    :message $ either (get-in rule $ [] :options :message) (str "\"expects number not in the range, got " $ preview-data data)
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message) (str "\"expects a number, got " $ preview-data data)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"expects a number, got " $ preview-data data)
         |validate-boolean $ quote
           defn validate-boolean (data rule coord)
-            if (boolean? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord $ append coord 'boolean)
-              :message $ or (get-in rule $ [] :options :message) (str "\"expects a boolean, got " $ preview-data data)
+            if (bool? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord $ append coord 'boolean)
+              :message $ either (get-in rule $ [] :options :message) (str "\"expects a boolean, got " $ preview-data data)
         |validate-and $ quote
           defn validate-and (data rule coord)
             let
@@ -132,7 +131,7 @@
                     result $ validate-lilac data r0 next-coord
                   if (:ok? result) (recur $ rest xs)
                     {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                      :message $ get-in rule ([] :options :message) "\"failed validating in \"and\""
+                      :message $ either (get-in rule $ [] :options :message) (, "\"failed validating in \"and\"")
                       :next result
         |custom+ $ quote
           defn custom+ (f & args)
@@ -178,7 +177,7 @@
                             = (count items) (count data)
                           {} $ :ok? true
                           {} (:ok? false) (:coord next-coord) (:rule rule) (:data ys)
-                            :message $ get-in rule ([] :options :message)
+                            :message $ either (get-in rule $ [] :options :message)
                               str "\"expects tuple of " (count items) "\" items, got " $ count data
                         , ok-result
                       let
@@ -189,7 +188,7 @@
                         if (:ok? result)
                           recur (rest xs) (rest ys) (inc idx)
                           {} (:ok? false) (:coord next-coord) (:rule rule) (:data y0)
-                            :message $ get-in rule ([] :options :message) "\"failed validating in \"tuple\""
+                            :message $ either (get-in rule $ [] :options :message) (, "\"failed validating in \"tuple\"")
                             :next result
               if in-list?
                 if (list? data) (check-values)
@@ -224,7 +223,7 @@
                       if (:ok? result) (recur $ rest xs) (, result)
                       , k-result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message) (str "\"expects a map, got " $ preview-data data)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"expects a map, got " $ preview-data data)
         |validate-not $ quote
           defn validate-not (data rule coord)
             let
@@ -233,7 +232,7 @@
                 result $ validate-lilac data item coord
               if (:ok? result)
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ get-in rule ([] :options :message) "\"expects a inverted value in \"not\""
+                  :message $ either (get-in rule $ [] :options :message) (, "\"expects a inverted value in \"not\"")
                   :next result
                 , ok-result
         |validate-is $ quote
@@ -242,7 +241,7 @@
                 coord $ append coord 'is
               if (= data $ :item rule) (, ok-result)
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message)
+                  :message $ either (get-in rule $ [] :options :message)
                     str "\"expects just " (preview-data $ :item rule) (, "\", got ") (preview-data data)
         |validate-or $ quote
           defn validate-or (data rule coord)
@@ -254,7 +253,7 @@
                   branches $ []
                 if (empty? xs)
                   {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                    :message $ get-in rule ([] :options :message) "\"found no matched case in \"or\""
+                    :message $ either (get-in rule $ [] :options :message) (, "\"found no matched case in \"or\"")
                     :branches branches
                     :next $ peek branches
                   let
@@ -277,15 +276,15 @@
                 cond
                     some? re
                     if (re-matches re data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                      :message $ or (get-in rule $ [] :options :message) (str "\"expects a string in " re "\", got " $ preview-data data)
+                      :message $ either (get-in rule $ [] :options :message) (str "\"expects a string in " re "\", got " $ preview-data data)
                   (some? nonblank?)
                     if (and nonblank? $ string/blank? data)
                       {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                        :message $ or (get-in rule $ [] :options :message) (str "\"expects nonblank string , got " $ preview-data data)
+                        :message $ either (get-in rule $ [] :options :message) (str "\"expects nonblank string , got " $ preview-data data)
                       , ok-result
                   true ok-result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message) (str "\"expected a string, but got " $ preview-data data)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"expected a string, but got " $ preview-data data)
         |validate-lilac $ quote
           defn validate-lilac (data rule & args) (; println "\"got rule:" rule)
             let
@@ -298,22 +297,21 @@
                     do (; println "\"calling method for" kind method) (method data rule coord)
                   (fn? user-method)
                     do (; println "\"calling method for" kind method) (user-method data rule coord)
-                  true $ do (println "\"Unknown method:" kind "\"of" rule) (.exit js/process 1)
-              if (:ok? result) result $ assoc result :formatted-message (format-message nil result)
+                  true $ do (println "\"Unknown method:" kind "\"of" rule) (quit 1)
+              if (:ok? result) result $ assoc result :formatted-message (format-message | result)
         |validate-fn $ quote
           defn validate-fn (data rule coord)
             let
                 next-coord $ append coord 'fn
               if (fn? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                :message $ or (get-in rule $ [] :options :message) (str "\"expects a function, got " $ preview-data data)
+                :message $ either (get-in rule $ [] :options :message) (str "\"expects a function, got " $ preview-data data)
         |format-message $ quote
           defn format-message (acc result)
             if (nil? result) acc $ let
-                message $ str (:message result) "\" at "
-                  vec $ remove symbol? (:coord result)
+                message $ str (:message result) "\" at " (filter-not symbol? $ :coord result)
               recur
                 str acc
-                  if (some? acc) \newline "\""
+                  if (some? acc) &newline "\""
                   , message
                 :next result
         |vector+ $ quote
@@ -321,7 +319,8 @@
             let
                 options $ either (first args) ({})
               check-keys "\"checking vector+" options $ [] :allow-seq?
-              {} (:lilac-type :vector) (:item item) (:options options) (:allow-seq? $ :allow-seq? options)
+              {} (:lilac-type :vector) (:item item) (:options options)
+                :allow-seq? $ either (:allow-seq? options) false
         |optional+ $ quote
           defn optional+ (item & args)
             let
@@ -357,7 +356,7 @@
                       recur (rest xs) (inc idx)
                       , result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message) (str "\"expects a list, got " $ preview-data data)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"expects a list, got " $ preview-data data)
         |or+ $ quote
           defn or+ (items & args)
             let
@@ -375,13 +374,13 @@
             let
                 next-coord $ append coord 'nil
               if (nil? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                :message $ or (get-in rule $ [] :options :message) (str "\"expects a nil, got " $ preview-data data)
+                :message $ either (get-in rule $ [] :options :message) (str "\"expects a nil, got " $ preview-data data)
         |validate-keyword $ quote
           defn validate-keyword (data rule coord)
             let
                 next-coord $ append coord 'keyword
               if (keyword? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                :message $ or (get-in rule $ [] :options :message) (str "\"expects a keyword, got " $ preview-data data)
+                :message $ either (get-in rule $ [] :options :message) (str "\"expects a keyword, got " $ preview-data data)
         |is+ $ quote
           defn is+ (x & args)
             let
@@ -397,15 +396,24 @@
             let
                 options $ either (first args) ({})
               {} (:lilac-type :keyword) (:options options)
-        |in-dev? $ quote (def in-dev? $ do ^boolean js/goog.DEBUG)
         |validate-symbol $ quote
           defn validate-symbol (data rule coord)
             let
                 coord $ append coord 'symbol
               if (symbol? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                :message $ or (get-in rule $ [] :options :message) (str "\"expects a symbol, got " $ preview-data data)
+                :message $ either (get-in rule $ [] :options :message) (str "\"expects a symbol, got " $ preview-data data)
         |dev-check $ quote
-          defmacro dev-check (data rule) (quote-replace $ echo "\"TODO")
+          defmacro dev-check (data rule)
+            let
+                result-v $ gensym "\"result"
+              quote-replace $ when (deref *in-dev?)
+                &let
+                    ~ result-v
+                    validate-lilac (~ data) (~ rule)
+                  when
+                    not $ :ok? (~ result-v)
+                    println (:formatted-message $ ~ result-v) (, &newline)
+                      str "\"(dev-check " (quote $ ~ data) (, "\" ") (quote $ ~ rule) (, "\"), where props is: ") (~ data)
         |validate-pick-type $ quote
           defn validate-pick-type (data rule coord)
             let
@@ -415,12 +423,12 @@
                 data-type $ get data type-field
               if (nil? $ get dict data-type)
                 {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                  :message $ get-in rule ([] :options :message) (str "\"found no matched type in pick-type: " data-type)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"found no matched type in pick-type: " data-type)
                 let
                     next-rule $ get dict data-type
                     result $ validate-lilac data next-rule next-coord
                   if (:ok? result) result $ {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                    :message $ get-in rule ([] :options :message) (str "\"failed to match in pick-type")
+                    :message $ either (get-in rule $ [] :options :message) (str "\"failed to match in pick-type")
                     :next result
         |validate-custom $ quote
           defn validate-custom (data rule coord)
@@ -429,7 +437,9 @@
                 next-coord $ append coord 'custom
                 result $ method data rule coord
               if (:ok? result) result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                :message $ or (:message result) (get-in rule $ [] :options :message) (, "\"failed to validate with custom method")
+                :message $ -> (:message result)
+                  either $ get-in rule ([] :options :message)
+                  either "\"failed to validate with custom method"
         |pick-type+ $ quote
           defn pick-type+ (dict & args)
             let
@@ -444,7 +454,7 @@
                 something? $ :some? rule
               if something?
                 if (some? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message) (str "\"expects something, got " $ preview-data data)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"expects something, got " $ preview-data data)
                 , ok-result
         |map+ $ quote
           defn map+ (key-shape item & args)
@@ -471,21 +481,24 @@
                       recur (rest xs) (inc idx)
                       , result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ or (get-in rule $ [] :options :message) (str "\"expects a vector, got " $ preview-data data)
+                  :message $ either (get-in rule $ [] :options :message) (str "\"expects a vector, got " $ preview-data data)
         |validate-enum $ quote
           defn validate-enum (data rule coord)
             let
                 coord $ append coord 'enum
                 items $ :items rule
               if (contains? items data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                :message $ or (get-in rule $ [] :options :message)
+                :message $ either (get-in rule $ [] :options :message)
                   str "\"expects value of " (pr-str items) "\", got " $ preview-data data
         |record+ $ quote
           defn record+ (pairs & args)
             let
                 options $ either (first args) ({})
               check-keys "\"checking record+" options $ [] :exact-keys? :check-keys? :all-optional?
-              {} (:lilac-type :record) (:pairs pairs) (:options options) (:exact-keys? $ :exact-keys? options) (:check-keys? $ :check-keys? options) (:all-optional? $ :all-optional? options)
+              {} (:lilac-type :record) (:pairs pairs) (:options options)
+                :exact-keys? $ either (:exact-keys? options) false
+                :check-keys? $ either (:check-keys? options) false
+                :all-optional? $ either (:all-optional? options) false
         |boolean+ $ quote
           defn boolean+ (& args) ({} $ :lilac-type :boolean)
         |validate-component $ quote
@@ -495,6 +508,7 @@
                 next-coord $ append coord (turn-symbol $ :name rule)
                 next-rule $ apply lazy-fn (:args rule)
               validate-lilac data next-rule next-coord
+        |*in-dev? $ quote (defatom *in-dev? true)
         |not+ $ quote
           defn not+ (item & args)
             {} (:lilac-type :not) (:item item) (:options $ {})
@@ -524,7 +538,7 @@
             cond
                 string? x
                 pr-str x
-              (boolean? x)
+              (bool? x)
                 str x
               (number? x)
                 str x
@@ -540,8 +554,6 @@
                 , "\"a list"
               (nil? x)
                 , "\"nil"
-              (seq? x)
-                , "\"a seq"
               :else $ str "\"Unknown: "
                 subs (str x) 0 10
         |check-keys $ quote
@@ -556,7 +568,7 @@
                         not $ any?
                           fn (x) (= k x)
                           , xs
-                        js/console.warn message "\"unexpected key" (pr-str k) "\", expect" $ pr-str xs
+                        echo "\"Lilac warning:" message "\"unexpected key" (pr-str k) "\", expect" $ pr-str xs
                       recur $ rest xs
                 [] real-keys
         |seq-equal $ quote
@@ -930,7 +942,7 @@
         |router-data $ quote
           def router-data $ {} (:port 7800)
             :routes $ []
-              {} (:path |home)
+              {} (:path :home)
                 :get $ {} (:type :file) (:file |home.json)
               {} (:path |plants/:plant-id)
                 :get $ {} (:type :file) (:file |plant-default.json)
