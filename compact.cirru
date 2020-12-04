@@ -1,10 +1,10 @@
 
 {} (:package |lilac)
-  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:modules $ []) (:version nil)
+  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:modules $ [] |calcit-test/compact.cirru) (:version nil)
   :files $ {}
     |lilac.main $ {}
       :ns $ quote
-        ns lilac.main $ :require ([] lilac.core :refer $ [] number+ or+ deflilac validate-lilac string+ record+ not+ nil+ vector+ dev-check) ([] cljs.reader :refer $ [] read-string) ([] lilac.router :refer $ [] router-data lilac-router+)
+        ns lilac.main $ :require ([] lilac.core :refer $ [] number+ or+ deflilac validate-lilac string+ record+ not+ nil+ dev-check) ([] cljs.reader :refer $ [] read-string) ([] lilac.router :refer $ [] router-data lilac-router+) ([] lilac.test :refer $ [] run-tests)
       :defs $ {}
         |main! $ quote
           defn main! () (println "\"Started.") (run-demo!)
@@ -16,6 +16,7 @@
                 result $ validate-lilac router-data (lilac-router+)
               if (:ok? result) (println "\"Passed validation!") (println $ :formatted-message result)
               dev-check "\"1" $ number+ ({} $ :x 1)
+              run-tests
       :proc $ quote ()
     |lilac.core $ {}
       :ns $ quote
@@ -28,7 +29,7 @@
                   set? items
                   , items
                 (list? items)
-                  set items
+                  #{} & items
                 :else $ do (echo "\"Lilac warning: unknown items" items) items
         |symbol+ $ quote
           defn symbol+ (& args) ({} $ :lilac-type :symbol)
@@ -80,7 +81,7 @@
                 cond
                   exact-keys? $ if (seq-equal existed-keys wanted-keys) (check-values)
                     {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                      :message $ or default-message
+                      :message $ either default-message
                         let
                             extra-keys $ seq-difference existed-keys wanted-keys
                             missing-keys $ seq-difference wanted-keys existed-keys
@@ -90,9 +91,9 @@
                     if (empty? extra-keys) (check-values)
                       {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                         :message $ either default-message (str "\"unexpected record keys " extra-keys "\" for " wanted-keys)
-                  :else $ check-values
+                  true $ check-values
         |core-methods $ quote
-          def core-methods $ {} (:boolean validate-boolean) (:string validate-string) (:nil validate-nil) (:fn validate-fn) (:keyword validate-keyword) (:symbol validate-symbol) (:number validate-number) (:vector validate-vector) (:record validate-record) (:map validate-map) (:list validate-list) (:set validate-set) (:not validate-not) (:or validate-or) (:and validate-and) (:custom validate-custom) (:component validate-component) (:is validate-is) (:optional validate-optional) (:tuple validate-tuple) (:any validate-any) (:enum validate-enum) (:pick-type validate-pick-type)
+          def core-methods $ {} (:boolean validate-boolean) (:string validate-string) (:nil validate-nil) (:fn validate-fn) (:keyword validate-keyword) (:symbol validate-symbol) (:number validate-number) (:record validate-record) (:map validate-map) (:list validate-list) (:set validate-set) (:not validate-not) (:or validate-or) (:and validate-and) (:custom validate-custom) (:component validate-component) (:is validate-is) (:optional validate-optional) (:tuple validate-tuple) (:any validate-any) (:enum validate-enum) (:pick-type validate-pick-type)
         |any+ $ quote
           defn any+ (& args)
             let
@@ -163,8 +164,7 @@
             let
                 items $ :items rule
                 next-coord $ append coord 'tuple
-                in-list? $ :in-list? rule
-                check-size? $ :check-size? rule
+                check-size? $ either (:check-size? rule) false
                 check-values $ fn ()
                   loop
                       xs items
@@ -190,13 +190,9 @@
                           {} (:ok? false) (:coord next-coord) (:rule rule) (:data y0)
                             :message $ either (get-in rule $ [] :options :message) (, "\"failed validating in \"tuple\"")
                             :next result
-              if in-list?
-                if (list? data) (check-values)
-                  {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ str "\"expects a list for tuple, got " (preview-data data)
-                if (list? data) (check-values)
-                  {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ str "\"expects a vector for tuple, got " (preview-data data)
+              if (list? data) (check-values)
+                {} (:ok? false) (:data data) (:rule rule) (:coord coord)
+                  :message $ str "\"expects a vector for tuple, got " (preview-data data)
         |number+ $ quote
           defn number+ (& args)
             let
@@ -211,7 +207,7 @@
                 coord $ append coord 'map
               if (map? data)
                 loop
-                    xs data
+                    xs $ to-pairs data
                   if (empty? xs) ok-result $ let
                       x0 $ first xs
                       k $ first x0
@@ -255,7 +251,7 @@
                   {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
                     :message $ either (get-in rule $ [] :options :message) (, "\"found no matched case in \"or\"")
                     :branches branches
-                    :next $ peek branches
+                    :next $ last branches
                   let
                       r0 $ first xs
                       result $ validate-lilac data r0 next-coord
@@ -271,14 +267,15 @@
             let
                 coord $ append coord 'string
                 re $ :re rule
-                nonblank? $ :nonblank? rule
+                nonblank? $ either (:nonblank? rule) false
               if (string? data)
                 cond
                     some? re
                     if (re-matches re data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                       :message $ either (get-in rule $ [] :options :message) (str "\"expects a string in " re "\", got " $ preview-data data)
                   (some? nonblank?)
-                    if (and nonblank? $ string/blank? data)
+                    if
+                      and nonblank? $ = | (trim data)
                       {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                         :message $ either (get-in rule $ [] :options :message) (str "\"expects nonblank string , got " $ preview-data data)
                       , ok-result
@@ -314,13 +311,6 @@
                   if (some? acc) &newline "\""
                   , message
                 :next result
-        |vector+ $ quote
-          defn vector+ (item & args)
-            let
-                options $ either (first args) ({})
-              check-keys "\"checking vector+" options $ [] :allow-seq?
-              {} (:lilac-type :vector) (:item item) (:options options)
-                :allow-seq? $ either (:allow-seq? options) false
         |optional+ $ quote
           defn optional+ (item & args)
             let
@@ -333,18 +323,15 @@
           defn tuple+ (items & args)
             let
                 options $ either (first args) ({})
-              assert (list? items) "\"expects items of tuple+ in vector"
+              assert "\"expects items of tuple+ in vector" $ list? items
               check-keys "\"checking tuple+" options $ [] :in-list? :check-size?
-              {} (:lilac-type :tuple) (:items items) (:options options) (:in-list? $ :in-list? options) (:check-size? $ :check-size? options)
+              {} (:lilac-type :tuple) (:items items) (:options options) (:check-size? $ :check-size? options)
         |validate-list $ quote
           defn validate-list (data rule coord)
             let
                 item-rule $ :item rule
                 coord $ append coord 'list
-                allow-seq? $ either (:allow-seq? rule) false
-              if
-                or (list? data)
-                  if allow-seq? (seq? data) false
+              if (list? data)
                 loop
                     xs data
                     idx 0
@@ -361,14 +348,10 @@
           defn or+ (items & args)
             let
                 options $ either (first args) ({})
-              assert (list? items) "\"expects items of or+ in vector"
+              assert "\"expects items of or+ in vector" $ list? items
               {} (:lilac-type :or) (:items items) (:options options)
         |register-custom-rule! $ quote
-          defn register-custom-rule! (type-name f)
-            assert (keyword? type-name) "\"expects type name in keyword"
-            assert (fn? f) "\"expects validation method in function"
-            println "\"registering validation rule" type-name
-            swap! *custom-methods assoc type-name f
+          defn register-custom-rule! (type-name f) (assert "\"expects type name in keyword" $ keyword? type-name) (assert "\"expects validation method in function" $ fn? f) (println "\"registering validation rule" type-name) (swap! *custom-methods assoc type-name f)
         |validate-nil $ quote
           defn validate-nil (data rule coord)
             let
@@ -446,12 +429,12 @@
                 options $ either (first args) ({})
               check-keys "\"checking pick-type+" options $ [] :type-field
               {} (:lilac-type :pick-type) (:dict dict) (:options options)
-                :type-field $ or (:type-field options) :type
+                :type-field $ either (:type-field options) :type
         |validate-any $ quote
           defn validate-any (data rule coord)
             let
                 coord $ append coord 'number
-                something? $ :some? rule
+                something? $ either (:some? rule) false
               if something?
                 if (some? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either (get-in rule $ [] :options :message) (str "\"expects something, got " $ preview-data data)
@@ -461,27 +444,6 @@
             let
                 options $ either (first args) ({})
               {} (:lilac-type :map) (:key-shape key-shape) (:item item) (:options options)
-        |validate-vector $ quote
-          defn validate-vector (data rule coord)
-            let
-                item-rule $ :item rule
-                coord $ append coord 'vector
-                allow-seq? $ either (:allow-seq? rule) false
-              if
-                or (list? data)
-                  if allow-seq? (seq? data) false
-                loop
-                    xs data
-                    idx 0
-                  if (empty? xs) ok-result $ let
-                      x0 $ first xs
-                      child-coord $ append coord idx
-                      result $ validate-lilac x0 item-rule child-coord
-                    if (:ok? result)
-                      recur (rest xs) (inc idx)
-                      , result
-                {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ either (get-in rule $ [] :options :message) (str "\"expects a vector, got " $ preview-data data)
         |validate-enum $ quote
           defn validate-enum (data rule coord)
             let
@@ -522,7 +484,7 @@
           defn and+ (items & args)
             let
                 options $ either (first args) ({})
-              assert (list? items) "\"expects items of and+ in vector"
+              assert "\"expects items of and+ in vector" $ list? items
               {} (:lilac-type :and) (:items items) (:options options)
         |re+ $ quote
           defn re+ (re & args)
@@ -591,12 +553,12 @@
       :proc $ quote ()
     |lilac.test $ {}
       :ns $ quote
-        ns lilac.test $ :require ([] cljs.test :refer $ [] deftest is testing run-tests) ([] lilac.core :refer $ [] validate-lilac deflilac optional+ keyword+ boolean+ number+ string+ custom+ vector+ tuple+ list+ record+ enum+ map+ not+ any+ and+ set+ nil+ or+ is+ pick-type+ register-custom-rule!) ([] lilac.router :refer $ [] lilac-router+ router-data)
+        ns lilac.test $ :require ([] calcit-test.core :refer $ [] deftest is testing run-tests) ([] lilac.core :refer $ [] validate-lilac deflilac optional+ keyword+ boolean+ number+ string+ custom+ tuple+ list+ record+ enum+ map+ not+ any+ and+ set+ nil+ or+ is+ pick-type+ register-custom-rule!) ([] lilac.router :refer $ [] lilac-router+ router-data)
       :defs $ {}
         |test-record $ quote
           deftest test-record
             testing "\"an empty record" $ is
-              =ok true $ validate-lilac ({}) (record+ $ [])
+              =ok true $ validate-lilac ({}) (record+ $ {})
             testing "\"an record of numbers" $ is
               =ok true $ validate-lilac
                 {} (1 100) (2 200)
@@ -614,7 +576,7 @@
                 {} (:a 100) (:b $ [] "\"red" "\"blue")
                 record+
                   {} (:a $ number+)
-                    :b $ vector+ (string+)
+                    :b $ list+ (string+)
                   , nil
             testing "\"exact two keys" $ is
               =ok false $ validate-lilac
@@ -676,15 +638,15 @@
             testing "\"an empty tuple" $ is
               =ok true $ validate-lilac ([]) (tuple+ $ [])
             testing "\"check an empty tuple in list" $ is
-              =ok false $ validate-lilac (list) (tuple+ $ [])
+              =ok true $ validate-lilac ([]) (tuple+ $ [])
             testing "\"an empty tuple in list" $ is
-              =ok true $ validate-lilac (list)
+              =ok true $ validate-lilac ([])
                 tuple+ ([]) ({} $ :in-list? true)
             testing "\"tuple of number string boolean" $ is
               =ok true $ validate-lilac ([] 1 "\"1" true)
                 tuple+ $ [] (number+) (string+) (boolean+)
             testing "\"tuple not vector" $ is
-              =ok false $ validate-lilac (list 1 "\"1" true)
+              =ok true $ validate-lilac ([] 1 "\"1" true)
                 tuple+ $ [] (number+) (string+) (boolean+)
             testing "\"tuple not right type" $ is
               =ok false $ validate-lilac ([] 1 "\"1" true)
@@ -695,32 +657,20 @@
             testing "\"tuple not right type" $ is
               =ok true $ validate-lilac ([] 1 "\"1")
                 tuple+ ([] $ number+) ({} $ :check-size? false)
-        |test-vector $ quote
-          deftest test-vector
-            testing "\"a vector of boolean" $ is
-              =ok true $ validate-lilac ([] true true false) (vector+ $ boolean+)
-            testing "\"a empty vector" $ is
-              =ok true $ validate-lilac ([]) (vector+ $ boolean+)
-            testing "\"list is not a empty vector" $ is
-              =ok false $ validate-lilac (list) (vector+ $ boolean+)
-            testing "\"boolean is not a empty vector" $ is
-              =ok false $ validate-lilac false (vector+ $ boolean+)
-            testing "\"allow seq in vector" $ is
-              =ok true $ validate-lilac
-                concat ([] 1) ([] 2)
-                vector+ (number+) ({} $ :allow-seq? true)
+        |run-tests $ quote
+          defn run-tests () (test-or) (test-and) (test-nil) (test-any) (test-map) (test-enum) (test-list) (test-tuple) (test-record) (test-custom) (test-number) (test-string) (test-boolean) (test-optional) (test-pick-type) (test-router-config) (test-component-args) (test-optional-record)
         |test-list $ quote
           deftest test-list
             testing "\"a list of boolean" $ is
-              =ok true $ validate-lilac (list true true false) (list+ $ boolean+)
+              =ok true $ validate-lilac ([] true true false) (list+ $ boolean+)
             testing "\"a empty list" $ is
-              =ok true $ validate-lilac (list) (list+ $ boolean+)
+              =ok true $ validate-lilac ([]) (list+ $ boolean+)
             testing "\"nil is not a list" $ is
               =ok false $ validate-lilac nil (list+ $ boolean+)
             testing "\"a list of string is not list of boolean" $ is
-              =ok false $ validate-lilac (list "\"true" "\"false") (list+ $ boolean+)
+              =ok false $ validate-lilac ([] "\"true" "\"false") (list+ $ boolean+)
             testing "\"vector is not a empty vector" $ is
-              =ok false $ validate-lilac ([]) (list+ $ boolean+)
+              =ok true $ validate-lilac ([]) (list+ $ boolean+)
             testing "\"boolean is not a empty vector" $ is
               =ok false $ validate-lilac false (list+ $ boolean+)
             testing "\"allow seq for list" $ is
@@ -755,10 +705,10 @@
             testing "\"blank string" $ is
               =ok true $ validate-lilac "\"x"
                 string+ $ {} (:nonblank? true)
-            testing "\"match digits" $ is
+            ; testing "\"match digits" $ is
               =ok true $ validate-lilac "\"12"
                 string+ $ {} (:re "#\"\\d+")
-            testing "\"not digits" $ is
+            ; testing "\"not digits" $ is
               =ok false $ validate-lilac "\"ddd"
                 string+ $ {} (:re "#\"\\d+")
         |test-number $ quote
@@ -778,7 +728,7 @@
         |test-custom $ quote
           deftest test-custom
             let
-                method-1 $ fn (x)
+                method-1 $ fn (x rule coord)
                   if
                     and (> x 10) (< x 20)
                     {} $ :ok? true
@@ -853,6 +803,7 @@
                 any+ $ {} (:some? true)
         |test-router-config $ quote
           deftest test-router-config
+            echo $ validate-lilac router-data (lilac-router+)
             testing "\"valid config" $ is
               =ok true $ validate-lilac router-data (lilac-router+)
             testing "\"overwriten config" $ is
@@ -931,18 +882,18 @@
       :proc $ quote ()
     |lilac.router $ {}
       :ns $ quote
-        ns lilac.router $ :require ([] lilac.core :refer $ [] validate-lilac deflilac optional+ keyword+ boolean+ number+ string+ custom+ vector+ list+ record+ not+ and+ set+ nil+ or+ is+)
+        ns lilac.router $ :require ([] lilac.core :refer $ [] validate-lilac deflilac optional+ keyword+ boolean+ number+ string+ custom+ list+ record+ not+ and+ set+ nil+ or+ is+)
       :defs $ {}
         |lilac-router-path+ $ quote
           deflilac lilac-router-path+ ()
             record+
               {} (:path $ string+) (:get $ lilac-method+) (:post $ lilac-method+) (:put $ lilac-method+) (:delete $ lilac-method+)
-                :next $ optional+ (vector+ $ lilac-router-path+)
+                :next $ optional+ (list+ $ lilac-router-path+)
               {} $ :check-keys? true
         |router-data $ quote
           def router-data $ {} (:port 7800)
             :routes $ []
-              {} (:path :home)
+              {} (:path |home)
                 :get $ {} (:type :file) (:file |home.json)
               {} (:path |plants/:plant-id)
                 :get $ {} (:type :file) (:file |plant-default.json)
@@ -968,6 +919,6 @@
           deflilac lilac-router+ ()
             record+
               {} (:port $ number+)
-                :routes $ vector+ (lilac-router-path+)
+                :routes $ list+ (lilac-router-path+)
               {} $ :exact-keys? true
       :proc $ quote ()

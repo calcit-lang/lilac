@@ -6,7 +6,13 @@ Lilac in Calcit
 
 ### Usages
 
-_TODO_
+Ported from [Lilac](https://github.com/mvc-works/lilac). Main different is `vector+` is removed since there's only List in Calcit Runner.
+
+Run with Calcit Runner:
+
+```bash
+cr
+```
 
 ### License
 
