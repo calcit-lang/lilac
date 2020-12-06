@@ -14,6 +14,10 @@ Run with Calcit Runner:
 cr
 ```
 
+### Workflow
+
+https://github.com/calcit-lang/calcit-workflow
+
 ### License
 
 MIT
