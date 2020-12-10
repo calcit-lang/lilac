@@ -4,10 +4,15 @@
   :files $ {}
     |lilac.main $ {}
       :ns $ quote
-        ns lilac.main $ :require ([] lilac.core :refer $ [] number+ or+ deflilac validate-lilac string+ record+ not+ nil+ dev-check) ([] cljs.reader :refer $ [] read-string) ([] lilac.router :refer $ [] router-data lilac-router+) ([] lilac.test :refer $ [] run-tests)
+        ns lilac.main $ :require ([] lilac.core :refer $ [] number+ or+ deflilac validate-lilac string+ record+ not+ nil+ dev-check) ([] cljs.reader :refer $ [] read-string) ([] lilac.router :refer $ [] router-data lilac-router+) ([] lilac.test :refer $ [] run-tests) ([] calcit-test.core :refer $ [] *quit-on-failure?)
       :defs $ {}
         |main! $ quote
-          defn main! () (println "\"Started.") (run-demo!)
+          defn main! ()
+            if
+              = (get-env "\"env") "\"ci"
+              reset! *quit-on-failure? true
+            println "\"Started."
+            run-demo!
         |reload! $ quote
           defn reload! () (println "\"Reloaded.") (run-demo!)
         |run-demo! $ quote
