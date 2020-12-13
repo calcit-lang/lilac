@@ -710,12 +710,12 @@
             testing "\"blank string" $ is
               =ok true $ validate-lilac "\"x"
                 string+ $ {} (:nonblank? true)
-            ; testing "\"match digits" $ is
+            testing "\"match digits" $ is
               =ok true $ validate-lilac "\"12"
-                string+ $ {} (:re "#\"\\d+")
-            ; testing "\"not digits" $ is
+                string+ $ {} (:re "\"\\d+")
+            testing "\"not digits" $ is
               =ok false $ validate-lilac "\"ddd"
-                string+ $ {} (:re "#\"\\d+")
+                string+ $ {} (:re "\"\\d+")
         |test-number $ quote
           deftest test-number
             testing "\"a number" $ is
