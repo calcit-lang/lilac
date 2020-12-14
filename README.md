@@ -6,7 +6,12 @@ Lilac in Calcit
 
 ### Usages
 
-Ported from [Lilac](https://github.com/mvc-works/lilac). Main different is `vector+` is removed since there's only List in Calcit Runner.
+Ported from [Lilac](https://github.com/mvc-works/lilac).
+
+Difference:
+
+* `vector+` is removed since there's only List in Calcit Runner.
+* string based `re-matches` in Calcit Runner is very slow since
 
 Run with Calcit Runner:
 
