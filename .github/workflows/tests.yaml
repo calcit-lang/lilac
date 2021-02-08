@@ -17,7 +17,9 @@ jobs:
       run: chmod +x ci-bin/cr_once
 
     - name: "prepare modules"
-      run: mkdir -p ~/.config/calcit/modules/ && cd ~/.config/calcit/modules/ && git clone https://github.com/calcit-lang/calcit-test
+      run: >
+        mkdir -p ~/.config/calcit/modules/ && cd ~/.config/calcit/modules/
+        && git clone https://github.com/calcit-lang/calcit-test
 
     - name: "test"
       run: env=ci ./ci-bin/cr_once
@@ -25,6 +27,4 @@ jobs:
     - name: "test js"
       run: >
         ci-bin/cr_once --emit-js
-        && cp -v js/main.mjs js-out/main.mjs
-        && wget -O js-out/calcit.procs.mjs http://js.calcit-lang.org/calcit.procs.mjs
-        && node js-out/main.mjs
+        && yarn && target=node yarn webpack && node js-out/bundle.js

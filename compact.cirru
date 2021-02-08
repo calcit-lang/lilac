@@ -522,7 +522,7 @@
               (nil? x)
                 , "\"nil"
               :else $ str "\"Unknown: "
-                subs (str x) 0 10
+                substr (str x) 0 10
         |check-keys $ quote
           defn check-keys (message data xs)
             let
