@@ -1,6 +1,6 @@
 
 {} (:package |lilac)
-  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:modules $ [] |calcit-test/compact.cirru) (:version |0.1.0)
+  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:modules $ [] |calcit-test/compact.cirru) (:version |0.1.1)
   :files $ {}
     |lilac.main $ {}
       :ns $ quote

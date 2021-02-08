@@ -9885,4 +9885,4 @@
                 :id |Rli_mlJiG
             :id |t6MSEJ4vm
         :proc $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1579784807920) (:data $ {}) (:id |4ki0DVR2N)
-  :configs $ {} (:reload-fn |lilac.main/reload!) (:modules $ [] |calcit-test/compact.cirru) (:local-storage-key |calcit-storage) (:output |src) (:port 6001) (:extension |.cljs) (:init-fn |lilac.main/main!) (:compact-output? true) (:storage-key |calcit.cirru) (:version |0.1.0)
+  :configs $ {} (:reload-fn |lilac.main/reload!) (:modules $ [] |calcit-test/compact.cirru) (:local-storage-key |calcit-storage) (:output |src) (:port 6001) (:extension |.cljs) (:init-fn |lilac.main/main!) (:compact-output? true) (:storage-key |calcit.cirru) (:version |0.1.1)
