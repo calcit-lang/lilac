@@ -2,7 +2,7 @@
 {} (:package |lilac)
   :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!)
     :modules $ [] |calcit-test/compact.cirru
-    :version |0.1.1
+    :version |0.1.2
   :files $ {}
     |lilac.main $ {}
       :ns $ quote
@@ -36,7 +36,7 @@
           [] lilac.util :refer $ [] preview-data check-keys seq-equal seq-difference
       :defs $ {}
         |enum+ $ quote
-          defn enum+ (items & args)
+          defn enum+ (items ? arg)
             {} (:lilac-type :enum)
               :items $ cond
                 
@@ -45,7 +45,7 @@
                 (list? items) (#{} & items)
                 :else $ do (echo "\"Lilac warning: unknown items" items) items
         |symbol+ $ quote
-          defn symbol+ (& args)
+          defn symbol+ (? arg)
             {} $ :lilac-type :symbol
         |validate-set $ quote
           defn validate-set (data rule base-coord)
@@ -121,9 +121,9 @@
         |core-methods $ quote
           def core-methods $ {} (:boolean validate-boolean) (:string validate-string) (:nil validate-nil) (:fn validate-fn) (:keyword validate-keyword) (:symbol validate-symbol) (:number validate-number) (:record validate-record) (:map validate-map) (:list validate-list) (:set validate-set) (:not validate-not) (:or validate-or) (:and validate-and) (:custom validate-custom) (:component validate-component) (:is validate-is) (:optional validate-optional) (:tuple validate-tuple) (:any validate-any) (:enum validate-enum) (:pick-type validate-pick-type)
         |any+ $ quote
-          defn any+ (& args)
+          defn any+ (? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               check-keys "\"checking any+" options $ [] :some?
               {} (:lilac-type :any) (:options options)
                 :some? $ :some? options
@@ -171,9 +171,9 @@
                         , "\"failed validating in \"and\""
                       :next result
         |custom+ $ quote
-          defn custom+ (f & args)
+          defn custom+ (f ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               {} (:lilac-type :custom) (:fn f) (:options options)
         |validate-optional $ quote
           defn validate-optional (data rule base-coord)
@@ -192,9 +192,9 @@
                 :args $ [] (~@ args)
                 :fn $ fn (~ args) (~ body)
         |fn+ $ quote
-          defn fn+ (& args)
+          defn fn+ (? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               {} (:lilac-type :fn) (:options options)
         |validate-tuple $ quote
           defn validate-tuple (data rule coord)
@@ -234,9 +234,9 @@
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ str "\"expects a vector for tuple, got " (preview-data data)
         |number+ $ quote
-          defn number+ (& args)
+          defn number+ (? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               check-keys "\"checking number+" options $ [] :max :min
               {} (:lilac-type :number)
                 :max $ :max options
@@ -312,9 +312,9 @@
                       result $ validate-lilac data r0 next-coord
                     if (:ok? result) result $ recur (rest xs) (append branches result)
         |list+ $ quote
-          defn list+ (item & args)
+          defn list+ (item ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               check-keys "\"checking list+" options $ [] :allow-seq?
               {} (:lilac-type :list) (:item item) (:options options)
                 :allow-seq? $ :allow-seq? options
@@ -345,9 +345,9 @@
                     get-in rule $ [] :options :message
                     str "\"expected a string, but got " $ preview-data data
         |validate-lilac $ quote
-          defn validate-lilac (data rule & args) (; println "\"got rule:" rule)
+          defn validate-lilac (data rule ? arg) (; println "\"got rule:" rule)
             let
-                coord $ either (first args) ([])
+                coord $ either arg ([])
                 kind $ :lilac-type rule
                 method $ get core-methods kind
                 user-method $ get (deref *custom-methods) kind
@@ -377,18 +377,18 @@
                   , message
                 :next result
         |optional+ $ quote
-          defn optional+ (item & args)
+          defn optional+ (item ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               {} (:lilac-type :optional) (:item item) (:options options)
         |*custom-methods $ quote
           defatom *custom-methods $ {}
         |nil+ $ quote
           defn nil+ () $ {} (:lilac-type :nil)
         |tuple+ $ quote
-          defn tuple+ (items & args)
+          defn tuple+ (items ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               assert "\"expects items of tuple+ in vector" $ list? items
               check-keys "\"checking tuple+" options $ [] :in-list? :check-size?
               {} (:lilac-type :tuple) (:items items) (:options options)
@@ -414,9 +414,9 @@
                     get-in rule $ [] :options :message
                     str "\"expects a list, got " $ preview-data data
         |or+ $ quote
-          defn or+ (items & args)
+          defn or+ (items ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               assert "\"expects items of or+ in vector" $ list? items
               {} (:lilac-type :or) (:items items) (:options options)
         |register-custom-rule! $ quote
@@ -442,19 +442,19 @@
                   get-in rule $ [] :options :message
                   str "\"expects a keyword, got " $ preview-data data
         |is+ $ quote
-          defn is+ (x & args)
+          defn is+ (x ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               {} (:lilac-type :is) (:item x)
         |set+ $ quote
-          defn set+ (item & args)
+          defn set+ (item ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               {} (:lilac-type :set) (:item item) (:options options)
         |keyword+ $ quote
-          defn keyword+ (& args)
+          defn keyword+ (? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               {} (:lilac-type :keyword) (:options options)
         |validate-symbol $ quote
           defn validate-symbol (data rule base-coord)
@@ -513,9 +513,9 @@
                   either $ get-in rule ([] :options :message)
                   either "\"failed to validate with custom method"
         |pick-type+ $ quote
-          defn pick-type+ (dict & args)
+          defn pick-type+ (dict ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               check-keys "\"checking pick-type+" options $ [] :type-field
               {} (:lilac-type :pick-type) (:dict dict) (:options options)
                 :type-field $ either (:type-field options) :type
@@ -531,9 +531,9 @@
                     str "\"expects something, got " $ preview-data data
                 , ok-result
         |map+ $ quote
-          defn map+ (key-shape item & args)
+          defn map+ (key-shape item ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               {} (:lilac-type :map) (:key-shape key-shape) (:item item) (:options options)
         |validate-enum $ quote
           defn validate-enum (data rule base-coord)
@@ -545,16 +545,16 @@
                   get-in rule $ [] :options :message
                   str "\"expects value of " (pr-str items) "\", got " $ preview-data data
         |record+ $ quote
-          defn record+ (pairs & args)
+          defn record+ (pairs ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               check-keys "\"checking record+" options $ [] :exact-keys? :check-keys? :all-optional?
               {} (:lilac-type :record) (:pairs pairs) (:options options)
                 :exact-keys? $ either (:exact-keys? options) false
                 :check-keys? $ either (:check-keys? options) false
                 :all-optional? $ either (:all-optional? options) false
         |boolean+ $ quote
-          defn boolean+ (& args)
+          defn boolean+ (? arg)
             {} $ :lilac-type :boolean
         |validate-component $ quote
           defn validate-component (data rule coord)
@@ -566,28 +566,28 @@
               validate-lilac data next-rule next-coord
         |*in-dev? $ quote (defatom *in-dev? true)
         |not+ $ quote
-          defn not+ (item & args)
+          defn not+ (item ? arg)
             {} (:lilac-type :not) (:item item)
               :options $ {}
         |string+ $ quote
-          defn string+ (& args)
+          defn string+ (? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               check-keys "\"checking string+" options $ [] :nonblank? :re
               {} (:lilac-type :string)
                 :re $ :re options
                 :nonblank? $ :nonblank? options
                 :options options
         |and+ $ quote
-          defn and+ (items & args)
+          defn and+ (items ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               assert "\"expects items of and+ in vector" $ list? items
               {} (:lilac-type :and) (:items items) (:options options)
         |re+ $ quote
-          defn re+ (re & args)
+          defn re+ (re ? arg)
             let
-                options $ either (first args) ({})
+                options $ either arg ({})
               {} (:lilac-type :re) (:re re) (:options options)
       :proc $ quote ()
     |lilac.util $ {}
