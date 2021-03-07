@@ -2,7 +2,7 @@
 {} (:package |lilac)
   :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!)
     :modules $ [] |calcit-test/compact.cirru
-    :version |0.1.2
+    :version |0.1.3
   :files $ {}
     |lilac.main $ {}
       :ns $ quote
@@ -39,7 +39,6 @@
           defn enum+ (items ? arg)
             {} (:lilac-type :enum)
               :items $ cond
-                
                   set? items
                   , items
                 (list? items) (#{} & items)
@@ -77,7 +76,9 @@
                 all-optional? $ either (:all-optional? rule) false
                 default-message $ get-in rule ([] :options :message)
                 wanted-keys $ keys pairs
-                existed-keys $ if (map? data) (keys data)
+                existed-keys $ if
+                  or (map? data) (record? data)
+                  keys data
                 check-values $ fn ()
                   loop
                       xs $ to-pairs pairs
@@ -96,7 +97,12 @@
                             recur $ rest xs
                             , result
               if
-                not $ map? data
+                not $ or (map? data)
+                  and (record? data)
+                    if
+                      some? $ :proto rule
+                      relevant-record? data $ :proto rule
+                      , true
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either
                     get-in rule $ [] :options :message
@@ -548,11 +554,12 @@
           defn record+ (pairs ? arg)
             let
                 options $ either arg ({})
-              check-keys "\"checking record+" options $ [] :exact-keys? :check-keys? :all-optional?
+              check-keys "\"checking record+" options $ [] :exact-keys? :check-keys? :all-optional? :proto
               {} (:lilac-type :record) (:pairs pairs) (:options options)
                 :exact-keys? $ either (:exact-keys? options) false
                 :check-keys? $ either (:check-keys? options) false
                 :all-optional? $ either (:all-optional? options) false
+                :proto $ :proto options
         |boolean+ $ quote
           defn boolean+ (? arg)
             {} $ :lilac-type :boolean
@@ -718,6 +725,32 @@
                     :a $ number+
                     :b $ number+
                   {} $ :exact-keys? true
+            let
+                Demo $ defrecord 'Demo :a :b
+                D2 $ defrecord 'D2 :a :b 
+              echo $ validate-lilac
+                %{} Demo (:a 1) (:b 1)
+                record+
+                  {}
+                    :a $ number+
+                    :b $ number+
+                  {} $ :exact-keys? true
+              testing "\"confirm keys of record" $ is
+                =ok true $ validate-lilac
+                  %{} Demo (:a 1) (:b 1)
+                  record+
+                    {}
+                      'a $ number+
+                      'b $ number+
+                    {} (:exact-keys? true) (:record Demo)
+              testing "\"check record for prototype" $ is
+                =ok false $ validate-lilac
+                  %{} Demo (:a 1) (:b 1)
+                  record+
+                    {}
+                      'a $ number+
+                      'b $ number+
+                    {} (:exact-keys? true) (:proto D2)
         |test-nil $ quote
           deftest test-nil
             testing "\"a nil" $ is
