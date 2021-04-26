@@ -2,7 +2,7 @@
 {} (:package |lilac)
   :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!)
     :modules $ [] |calcit-test/compact.cirru
-    :version |0.1.3
+    :version |0.1.4
   :files $ {}
     |lilac.main $ {}
       :ns $ quote
@@ -333,7 +333,7 @@
               if (string? data)
                 cond
                     some? re
-                    if (re-matches re data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
+                    if (re-matches data re) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                       :message $ either
                         get-in rule $ [] :options :message
                         str "\"expects a string in " re "\", got " $ preview-data data
@@ -376,7 +376,7 @@
           defn format-message (acc result)
             if (nil? result) acc $ let
                 message $ str (:message result) "\" at "
-                  filter-not symbol? $ :coord result
+                  filter-not (:coord result) symbol?
               recur
                 str acc
                   if (some? acc) &newline "\""
@@ -485,8 +485,8 @@
                       , &newline $ str "\"(dev-check "
                         quote $ ~ data
                         , "\" "
-                        quote $ ~ rule
-                        , "\"), where props is: " (~ data)
+                          quote $ ~ rule
+                          , "\"), where props is: " (~ data)
         |validate-pick-type $ quote
           defn validate-pick-type (data rule coord)
             let
@@ -626,28 +626,27 @@
                     &let
                       k $ first xs
                       when
-                        not $ any?
+                        not $ any? xs
                           fn (x) (= k x)
-                          , xs
                         echo "\"Lilac warning:" message "\"unexpected key" (pr-str k) "\", expect" $ pr-str xs
                       recur $ rest xs
                 [] real-keys
         |seq-equal $ quote
           defn seq-equal (xs ys)
             and
-              ->> xs $ every?
+              -> xs $ every?
                 fn (x)
-                  ->> ys $ any?
+                  -> ys $ any?
                     fn (y) (= x y)
-              ->> ys $ every?
+              -> ys $ every?
                 fn (y)
-                  ->> xs $ any?
+                  -> xs $ any?
                     fn (x) (= x y)
         |seq-difference $ quote
           defn seq-difference (xs ys)
-            ->> xs $ filter-not
+            -> xs $ filter-not
               fn (x)
-                ->> ys $ any?
+                -> ys $ any?
                   fn (y) (= x y)
       :proc $ quote ()
     |lilac.test $ {}
@@ -662,7 +661,7 @@
             testing "\"an empty record" $ is
               =ok true $ validate-lilac ({})
                 record+ $ {}
-            testing "\"an record of numbers" $ is
+            testing "\"a record of numbers" $ is
               =ok true $ validate-lilac
                 {} (1 100) (2 200)
                 record+
@@ -670,7 +669,7 @@
                     1 $ number+
                     2 $ number+
                   , nil
-            testing "\"an record of numbers of not keyword/number" $ is
+            testing "\"a record of numbers of not keyword/number" $ is
               =ok false $ validate-lilac
                 {} (:a 100) (:b 200)
                 record+
@@ -678,7 +677,7 @@
                     1 $ number+
                     2 $ number+
                   , nil
-            testing "\"an record of number and vector/string" $ is
+            testing "\"n record of number and vector/string" $ is
               =ok true $ validate-lilac
                 {} (:a 100)
                   :b $ [] "\"red" "\"blue"
@@ -726,8 +725,8 @@
                     :b $ number+
                   {} $ :exact-keys? true
             let
-                Demo $ defrecord 'Demo :a :b
-                D2 $ defrecord 'D2 :a :b 
+                Demo $ defrecord Demo :a :b
+                D2 $ defrecord D2 :a :b 
               echo $ validate-lilac
                 %{} Demo (:a 1) (:b 1)
                 record+
@@ -740,16 +739,16 @@
                   %{} Demo (:a 1) (:b 1)
                   record+
                     {}
-                      'a $ number+
-                      'b $ number+
+                      :a $ number+
+                      :b $ number+
                     {} (:exact-keys? true) (:record Demo)
               testing "\"check record for prototype" $ is
                 =ok false $ validate-lilac
                   %{} Demo (:a 1) (:b 1)
                   record+
                     {}
-                      'a $ number+
-                      'b $ number+
+                      :a $ number+
+                      :b $ number+
                     {} (:exact-keys? true) (:proto D2)
         |test-nil $ quote
           deftest test-nil
