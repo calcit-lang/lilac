@@ -972,12 +972,12 @@
                                               |j $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1615123202488) (:text |rule)
                                       |r $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1615123205167)
                                         :data $ {}
-                                          |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1615123220313) (:text |relevant-record?)
+                                          |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1623691126812) (:text |.matches?)
                                           |j $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1615123223684) (:text |data)
-                                          |r $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1615123226908)
+                                          |b $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1623690640039)
                                             :data $ {}
-                                              |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1615123390513) (:text |:proto)
-                                              |j $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1615123226908) (:text |rule)
+                                              |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1623690640039) (:text |:proto)
+                                              |j $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1623690640039) (:text |rule)
                                       |v $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1615123257300) (:text |true)
                         :id |LWgmBAVOV
                       |P $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1581086348082)
@@ -1769,7 +1769,7 @@
                   |r $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1606986923559) (:text |body)
               |v $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1606986924750)
                 :data $ {}
-                  |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1606986945445) (:text |quote-replace)
+                  |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1623690599419) (:text |quasiquote)
                   |j $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1606986946160)
                     :data $ {}
                       |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1606986952413) (:text |defn)
@@ -3372,7 +3372,7 @@
                                       |r $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1579783954086)
                                         :data $ {}
                                           |r $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1579783954086) (:text |1) (:id |kL9QLB21EH)
-                                          |P $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1607000341743) (:text |quit)
+                                          |P $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1623690702381) (:text |quit!)
                                         :id |kplQuNP6sK
                                     :id |LbSxcwSi9o
                                   |D $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1606986778178) (:text |true)
@@ -4416,7 +4416,7 @@
                 :data $ {}
                   |T $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1606987730377)
                     :data $ {}
-                      |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1606987733289) (:text |quote-replace)
+                      |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1623690606701) (:text |quasiquote)
                       |j $ {} (:type :expr) (:by |yeKFqj7rX) (:at 1607006292474)
                         :data $ {}
                           |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1607006293099) (:text |when)
@@ -5595,7 +5595,7 @@
                                   |T $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1579854981908) (:text |str) (:id |J9hqbnNK)
                                   |j $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1579854983404) (:text |x) (:id |BFEi4oFe)
                                 :id |2B8rxYzm5
-                              |D $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1612760696878) (:text |substr) (:id |7_CDlk6M)
+                              |D $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1623690680736) (:text |&str:slice) (:id |7_CDlk6M)
                               |j $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1579855001019) (:text |0) (:id |34nzqOJi)
                               |r $ {} (:type :leaf) (:by |yeKFqj7rX) (:at 1579855001951) (:text |10) (:id |__DIdxLX)
                             :id |PwtEsjCtt
@@ -10116,4 +10116,4 @@
     :init-fn |lilac.main/main!
     :compact-output? true
     :storage-key |calcit.cirru
-    :version |0.1.4
+    :version |0.1.5

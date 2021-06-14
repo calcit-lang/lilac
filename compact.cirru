@@ -2,7 +2,7 @@
 {} (:package |lilac)
   :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!)
     :modules $ [] |calcit-test/compact.cirru
-    :version |0.1.4
+    :version |0.1.5
   :files $ {}
     |lilac.main $ {}
       :ns $ quote
@@ -101,7 +101,7 @@
                   and (record? data)
                     if
                       some? $ :proto rule
-                      relevant-record? data $ :proto rule
+                      .matches? (:proto rule) data
                       , true
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either
@@ -191,7 +191,7 @@
           def ok-result $ {} (:ok? true)
         |deflilac $ quote
           defmacro deflilac (comp-name args body)
-            quote-replace $ defn (~ comp-name) (~ args)
+            quasiquote $ defn (~ comp-name) (~ args)
               {} (:lilac-type :component)
                 :name $ turn-keyword
                   quote $ ~ comp-name
@@ -362,7 +362,7 @@
                     do (; println "\"calling method for" kind method) (method data rule coord)
                   (fn? user-method)
                     do (; println "\"calling method for" kind method) (user-method data rule coord)
-                  true $ do (println "\"Unknown method:" kind "\"of" rule) (quit 1)
+                  true $ do (println "\"Unknown method:" kind "\"of" rule) (quit! 1)
               if (:ok? result) result $ assoc result :formatted-message (format-message | result)
         |validate-fn $ quote
           defn validate-fn (data rule coord)
@@ -474,7 +474,7 @@
           defmacro dev-check (data rule)
             let
                 result-v $ gensym "\"result"
-              quote-replace $ when (deref *in-dev?)
+              quasiquote $ when (deref *in-dev?)
                 &let
                     ~ result-v
                     validate-lilac (~ data) (~ rule)
@@ -614,7 +614,7 @@
               (list? x) "\"a list"
               (nil? x) "\"nil"
               true $ str "\"Unknown: "
-                substr (str x) 0 10
+                &str:slice (str x) 0 10
         |check-keys $ quote
           defn check-keys (message data xs)
             let
