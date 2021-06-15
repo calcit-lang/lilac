@@ -1,4 +1,4 @@
 
-import { main_BANG_ } from "./js-out/lilac.main.js"
+import { main_$x_ } from "./js-out/lilac.main.js"
 
-main_BANG_()
+main_$x_()
