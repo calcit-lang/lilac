@@ -26,7 +26,7 @@ jobs:
     - name: "prepare modules"
       run: >
         mkdir -p ~/.config/calcit/modules/ && cd ~/.config/calcit/modules/
-        && git clone https://github.com/calcit-lang/calcit-test --branch=0.0.3
+        && git clone https://github.com/calcit-lang/calcit-test
 
     - name: "test"
       run: env=ci cr --once
