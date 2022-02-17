@@ -1,9 +1,7 @@
 
 {}
-  :configs $ {} (:reload-fn |lilac.main/reload!) (:port 6001) (:output |src) (:compact-output? true) (:local-storage-key |calcit-storage) (:storage-key |calcit.cirru) (:version |0.1.6)
-    :modules $ [] |calcit-test/compact.cirru
-    :init-fn |lilac.main/main!
-    :extension |.cljs
+  :users $ {}
+    |yeKFqj7rX $ {} (:avatar nil) (:name |chen) (:nickname |chen) (:id |yeKFqj7rX) (:theme :star-trail) (:password |d41d8cd98f00b204e9800998ecf8427e)
   :ir $ {} (:package |lilac)
     :files $ {}
       |lilac.core $ {}
@@ -16862,5 +16860,8 @@
           :at 1579784807920
           :by |yeKFqj7rX
           :id |vEMTCH2tk
-  :users $ {}
-    |yeKFqj7rX $ {} (:avatar nil) (:name |chen) (:nickname |chen) (:id |yeKFqj7rX) (:theme :star-trail) (:password |d41d8cd98f00b204e9800998ecf8427e)
+  :configs $ {} (:reload-fn |lilac.main/reload!) (:port 6001) (:output |src) (:compact-output? true) (:local-storage-key |calcit-storage) (:storage-key |calcit.cirru) (:version |0.1.6)
+    :modules $ [] |calcit-test/compact.cirru
+    :init-fn |lilac.main/main!
+    :extension |.cljs
+  :entries $ {}

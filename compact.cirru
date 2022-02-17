@@ -3,6 +3,7 @@
   :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!)
     :modules $ [] |calcit-test/compact.cirru
     :version |0.1.6
+  :entries $ {}
   :files $ {}
     |lilac.core $ {}
       :ns $ quote
