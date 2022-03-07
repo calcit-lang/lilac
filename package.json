@@ -3,6 +3,7 @@
     "@calcit/procs": "^0.5.17"
   },
   "scripts": {
+    "bundle-test": "esbuild test.js --bundle --platform=node --outfile=js-out/bundle.js",
     "bundle": "esbuild main.js --bundle --platform=node --outfile=js-out/bundle.js"
   },
   "devDependencies": {

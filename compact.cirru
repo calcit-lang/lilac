@@ -4,11 +4,13 @@
     :modules $ [] |calcit-test/compact.cirru
     :version |0.1.6
   :entries $ {}
+    :test $ {} (:reload-fn |lilac.test/reload!) (:init-fn |lilac.test/main!)
+      :modules $ [] |calcit-test/compact.cirru
   :files $ {}
     |lilac.core $ {}
       :ns $ quote
         ns lilac.core $ :require
-          [] lilac.util :refer $ [] preview-data check-keys seq-equal seq-difference
+          lilac.util :refer $ preview-data check-keys seq-equal seq-difference
       :defs $ {}
         |validate-fn $ quote
           defn validate-fn (data rule coord)
@@ -576,10 +578,9 @@
     |lilac.main $ {}
       :ns $ quote
         ns lilac.main $ :require
-          [] lilac.core :refer $ [] number+ or+ deflilac validate-lilac string+ record+ nil+ dev-check *in-dev?
-          [] lilac.router :refer $ [] router-data lilac-router+
-          [] lilac.test :refer $ [] run-tests
-          [] calcit-test.core :refer $ [] *quit-on-failure?
+          lilac.core :refer $ number+ or+ deflilac validate-lilac string+ record+ nil+ dev-check *in-dev?
+          lilac.router :refer $ router-data lilac-router+
+          lilac.test :refer $ run-tests
       :defs $ {}
         |run-demo! $ quote
           defn run-demo! () $ let
@@ -588,22 +589,18 @@
               println $ :formatted-message result
             dev-check "\"1" $ number+
               {} $ :x 1
-            run-tests
+            ; run-tests
         |main! $ quote
-          defn main! ()
-            if
-              = (get-env "\"env") "\"ci"
-              reset! *quit-on-failure? true
-            println "\"Started."
-            run-demo!
+          defn main! () (println "\"Started.") (run-demo!)
         |reload! $ quote
           defn reload! () (println "\"Reloaded.") (run-demo!)
     |lilac.test $ {}
       :ns $ quote
         ns lilac.test $ :require
-          [] calcit-test.core :refer $ [] deftest is testing
-          [] lilac.core :refer $ [] validate-lilac deflilac optional+ keyword+ boolean+ number+ string+ custom+ tuple+ list+ record+ enum+ map+ any+ and+ nil+ or+ is+ pick-type+ register-custom-rule!
-          [] lilac.router :refer $ [] lilac-router+ router-data
+          calcit-test.core :refer $ deftest is testing
+          lilac.core :refer $ validate-lilac deflilac optional+ keyword+ boolean+ number+ string+ custom+ tuple+ list+ record+ enum+ map+ any+ and+ nil+ or+ is+ pick-type+ register-custom-rule!
+          lilac.router :refer $ lilac-router+ router-data
+          calcit-test.core :refer $ *quit-on-failure?
       :defs $ {}
         |test-record $ quote
           deftest test-record
@@ -937,6 +934,8 @@
             testing "\"not not fit optional number" $ is
               =ok false $ validate-lilac "\"1"
                 optional+ $ number+
+        |main! $ quote
+          defn main! () (reset! *quit-on-failure? true) (run-tests)
         |test-or $ quote
           deftest test-or
             testing "\"number or string" $ is
@@ -999,6 +998,8 @@
                 =ok true $ validate-lilac 11 (method-2+)
               testing "\"validating number with custom function" $ is
                 =ok false $ validate-lilac 21 (method-2+)
+        |reload! $ quote
+          defn reload! () $ run-tests
         |test-number $ quote
           deftest test-number
             testing "\"a number" $ is

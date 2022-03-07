@@ -30,9 +30,9 @@ jobs:
         && git clone https://github.com/calcit-lang/calcit-test
 
     - name: "test"
-      run: env=ci cr --once
+      run: cr --entry test -1
 
     - name: "test js"
       run: >
-        cr --once --emit-js
-        && yarn && yarn bundle && node js-out/bundle.js
+        cr --entry test -1 --emit-js
+        && yarn && yarn bundle-test && node js-out/bundle.js
