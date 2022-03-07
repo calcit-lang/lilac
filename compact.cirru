@@ -2,7 +2,7 @@
 {} (:package |lilac)
   :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!)
     :modules $ [] |calcit-test/compact.cirru
-    :version |0.1.6
+    :version |0.1.7
   :entries $ {}
     :test $ {} (:reload-fn |lilac.test/reload!) (:init-fn |lilac.test/main!)
       :modules $ [] |calcit-test/compact.cirru
@@ -35,22 +35,22 @@
         |validate-or $ quote
           defn validate-or (data rule coord)
             let
-                items $ :items rule
+                items $ &map:get rule :items
                 next-coord $ append coord 'or
-              loop
-                  xs items
-                  branches $ []
-                if (empty? xs)
-                  {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                    :message $ either
-                      get-in rule $ [] :options :message
-                      , "\"found no matched case in \"or\""
-                    :branches branches
-                    :next $ last branches
-                  let
-                      r0 $ first xs
-                      result $ validate-lilac data r0 next-coord
-                    if (:ok? result) result $ recur (rest xs) (append branches result)
+              apply-args
+                items $ []
+                fn (xs branches)
+                  if (empty? xs)
+                    {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
+                      :message $ either
+                        get-in rule $ [] :options :message
+                        , "\"found no matched case in \"or\""
+                      :branches branches
+                      :next $ last branches
+                    let
+                        r0 $ first xs
+                        result $ validate-lilac data r0 next-coord
+                      if (&map:get result :ok?) result $ recur (rest xs) (append branches result)
         |validate-pick-type $ quote
           defn validate-pick-type (data rule coord)
             let
@@ -92,10 +92,10 @@
         |validate-component $ quote
           defn validate-component (data rule coord)
             let
-                lazy-fn $ :fn rule
+                lazy-fn $ &map:get rule :fn
                 next-coord $ append coord
                   turn-symbol $ :name rule
-                next-rule $ apply lazy-fn (:args rule)
+                next-rule $ lazy-fn & (&map:get rule :args)
               validate-lilac data next-rule next-coord
         |fn+ $ quote
           defn fn+ (? arg)
@@ -157,20 +157,20 @@
         |validate-and $ quote
           defn validate-and (data rule base-coord)
             let
-                items $ :items rule
+                items $ &map:get rule :items
                 next-coord $ append base-coord 'and
-              loop
-                  xs items
-                if (empty? xs) ok-result $ let
-                    r0 $ first xs
-                    result $ validate-lilac data r0 next-coord
-                  if (:ok? result)
-                    recur $ rest xs
-                    {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                      :message $ either
-                        get-in rule $ [] :options :message
-                        , "\"failed validating in \"and\""
-                      :next result
+              apply-args (items)
+                fn (xs)
+                  if (empty? xs) ok-result $ let
+                      r0 $ first xs
+                      result $ validate-lilac data r0 next-coord
+                    if (&map:get result :ok?)
+                      recur $ rest xs
+                      {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
+                        :message $ either
+                          get-in rule $ [] :options :message
+                          , "\"failed validating in \"and\""
+                        :next result
         |validate-any $ quote
           defn validate-any (data rule base-coord)
             let
@@ -185,24 +185,25 @@
         |validate-map $ quote
           defn validate-map (data rule base-coord)
             let
-                key-rule $ :key-shape rule
-                item-rule $ :item rule
+                key-rule $ &map:get rule :key-shape
+                item-rule $ &map:get rule :item
                 coord $ append base-coord 'map
               if (map? data)
-                loop
-                    xs $ to-pairs data
-                  if (empty? xs) ok-result $ let
-                      x0 $ first xs
-                      k $ first x0
-                      v $ last x0
-                      child-coord $ append coord k
-                      k-result $ validate-lilac k key-rule child-coord
-                      result $ validate-lilac v item-rule child-coord
-                    if (:ok? k-result)
-                      if (:ok? result)
-                        recur $ rest xs
-                        , result
-                      , k-result
+                apply-args
+                    to-pairs data
+                  fn (xs)
+                    if (empty? xs) ok-result $ let
+                        x0 $ first xs
+                        k $ first x0
+                        v $ last x0
+                        child-coord $ append coord k
+                        k-result $ validate-lilac k key-rule child-coord
+                        result $ validate-lilac v item-rule child-coord
+                      if (&map:get k-result :ok?)
+                        if (&map:get result :ok?)
+                          recur $ rest xs
+                          , result
+                        , k-result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either
                     get-in rule $ [] :options :message
@@ -219,9 +220,9 @@
           defn validate-not (data rule base-coord)
             let
                 coord $ append base-coord 'not
-                item $ :item rule
+                item $ &map:get rule :item
                 result $ validate-lilac data item coord
-              if (:ok? result)
+              if (&map:get result :ok?)
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either
                     get-in rule $ [] :options :message
@@ -298,14 +299,14 @@
         |validate-optional $ quote
           defn validate-optional (data rule base-coord)
             let
-                item $ :item rule
+                item $ &map:get rule :item
                 coord $ append base-coord 'optional
               if (nil? data) ok-result $ validate-lilac data item coord
         |validate-enum $ quote
           defn validate-enum (data rule base-coord)
             let
                 coord $ append base-coord 'enum
-                items $ :items rule
+                items $ &map:get rule :items
               if (includes? items data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                 :message $ either
                   get-in rule $ [] :options :message
@@ -313,19 +314,18 @@
         |validate-list $ quote
           defn validate-list (data rule base-coord)
             let
-                item-rule $ :item rule
+                item-rule $ &map:get rule :item
                 coord $ append base-coord 'list
               if (list? data)
-                loop
-                    xs data
-                    idx 0
-                  if (empty? xs) ok-result $ let
-                      x0 $ first xs
-                      child-coord $ append coord idx
-                      result $ validate-lilac x0 item-rule child-coord
-                    if (:ok? result)
-                      recur (rest xs) (inc idx)
-                      , result
+                apply-args (data 0)
+                  fn (xs idx)
+                    if (empty? xs) ok-result $ let
+                        x0 $ first xs
+                        child-coord $ append coord idx
+                        result $ validate-lilac x0 item-rule child-coord
+                      if (&map:get result :ok?)
+                        recur (rest xs) (inc idx)
+                        , result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either
                     get-in rule $ [] :options :message
@@ -349,8 +349,8 @@
           defmacro deflilac (comp-name args body)
             quasiquote $ defn (~ comp-name) (~ args)
               {} (:lilac-type :component)
-                :name $ turn-keyword
-                  quote $ ~ comp-name
+                :name $ quote
+                  ~ $ turn-keyword comp-name
                 :args $ [] (~@ args)
                 :fn $ fn (~ args) (~ body)
         |*custom-methods $ quote
@@ -359,22 +359,21 @@
           defn validate-lilac (data rule ? arg) (; println "\"got rule:" rule)
             let
                 coord $ either arg ([])
-                kind $ :lilac-type rule
-                method $ get core-methods kind
-                user-method $ get (deref *custom-methods) kind
-                result $ cond
-                    fn? method
-                    do (; println "\"calling method for" kind method) (method data rule coord)
-                  (fn? user-method)
+                kind $ &map:get rule :lilac-type
+                result $ if-let
+                  method $ &map:get core-methods kind
+                  do (; println "\"calling method for" kind method) (method data rule coord)
+                  if-let
+                    user-method $ &map:get (deref *custom-methods) kind
                     do (; println "\"calling method for" kind method) (user-method data rule coord)
-                  true $ do (println "\"Unknown method:" kind "\"of" rule) (quit! 1)
-              if (:ok? result) result $ assoc result :formatted-message (format-message | result)
+                    do (println "\"Unknown method:" kind "\"of" rule) (quit! 1)
+              if (&map:get result :ok?) result $ assoc result :formatted-message (format-message | result)
         |validate-tuple $ quote
           defn validate-tuple (data rule coord)
             let
-                items $ :items rule
+                items $ &map:get rule :items
                 next-coord $ append coord 'tuple
-                check-size? $ either (:check-size? rule) false
+                check-size? $ either (&map:get rule :check-size?) false
                 check-values $ fn ()
                   loop
                       xs items
@@ -420,8 +419,8 @@
           defn validate-number (data rule base-coord)
             let
                 coord $ append base-coord 'number
-                min-v $ :min rule
-                max-v $ :max rule
+                min-v $ &map:get rule :min
+                max-v $ &map:get rule :max
               if (number? data)
                 if
                   and
@@ -448,11 +447,11 @@
           defn validate-record (data rule base-coord)
             let
                 coord $ append base-coord 'record
-                pairs $ :pairs rule
-                exact-keys? $ either (:exact-keys? rule) false
-                check-keys? $ either (:check-keys? rule) false
-                all-optional? $ either (:all-optional? rule) false
-                default-message $ get-in rule ([] :options :message)
+                pairs $ &map:get rule :pairs
+                exact-keys? $ either (&map:get rule :exact-keys?) false
+                check-keys? $ either (&map:get rule :check-keys?) false
+                all-optional? $ either (&map:get rule :all-optional?) false
+                default-message $ -> rule (&map:get :options) (&map:get :message)
                 wanted-keys $ keys pairs
                 existed-keys $ if
                   or (map? data) (record? data)
@@ -515,7 +514,7 @@
           defn validate-string (data rule base-coord)
             let
                 coord $ append base-coord 'string
-                re $ :re rule
+                re $ &map:get rule :re
                 nonblank? $ either (:nonblank? rule) false
               if (string? data)
                 cond
@@ -1050,21 +1049,20 @@
                   -> xs $ any?
                     fn (x) (= x y)
         |check-keys $ quote
-          defn check-keys (message data xs)
+          defn check-keys (message data defined-keys)
             let
                 real-keys $ keys data
-              apply
+              apply-args (real-keys)
                 fn (xs)
                   if
                     not $ empty? xs
                     &let
                       k $ first xs
                       when
-                        not $ any? xs
+                        not $ any? defined-keys
                           fn (x) (= k x)
                         echo "\"Lilac warning:" message "\"unexpected key" (pr-str k) "\", expect" $ pr-str xs
                       recur $ rest xs
-                [] real-keys
     |lilac.router $ {}
       :ns $ quote
         ns lilac.router $ :require
