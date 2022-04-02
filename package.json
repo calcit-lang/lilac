@@ -1,13 +1,9 @@
 {
+  "version": "0.2.0",
   "dependencies": {
-    "@calcit/procs": "^0.5.21"
+    "@calcit/procs": "^0.5.28"
   },
-  "scripts": {
-    "bundle-test": "esbuild test.js --bundle --platform=node --outfile=js-out/bundle.js",
-    "bundle": "esbuild main.js --bundle --platform=node --outfile=js-out/bundle.js"
-  },
+  "scripts": {},
   "devDependencies": {
-    "esbuild": "^0.14.25"
-  },
-  "version": "0.1.7"
+  }
 }
