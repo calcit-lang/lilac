@@ -34,5 +34,6 @@ jobs:
 
     - name: "test js"
       run: >
-        cr --entry test -1 --emit-js
-        && yarn && yarn bundle-test && node js-out/bundle.js
+        yarn
+        && cr --entry test -1 --emit-js
+        && node test.mjs

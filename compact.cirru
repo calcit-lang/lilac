@@ -2,7 +2,7 @@
 {} (:package |lilac)
   :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!)
     :modules $ [] |calcit-test/compact.cirru
-    :version |0.1.7
+    :version |0.2.0
   :entries $ {}
     :test $ {} (:reload-fn |lilac.test/reload!) (:init-fn |lilac.test/main!)
       :modules $ [] |calcit-test/compact.cirru
@@ -131,11 +131,6 @@
               check-keys "\"checking any+" options $ [] :some?
               {} (:lilac-type :any) (:options options)
                 :some? $ :some? options
-        |map+ $ quote
-          defn map+ (key-shape item ? arg)
-            let
-                options $ either arg ({})
-              {} (:lilac-type :map) (:key-shape key-shape) (:item item) (:options options)
         |nil+ $ quote
           defn nil+ () $ {} (:lilac-type :nil)
         |not+ $ quote
@@ -147,13 +142,6 @@
             let
                 options $ either arg ({})
               {} (:lilac-type :set) (:item item) (:options options)
-        |validate-boolean $ quote
-          defn validate-boolean (data rule coord)
-            if (bool? data) ok-result $ {} (:ok? false) (:data data) (:rule rule)
-              :coord $ append coord 'boolean
-              :message $ either
-                get-in rule $ [] :options :message
-                str "\"expects a boolean, got " $ preview-data data
         |validate-and $ quote
           defn validate-and (data rule base-coord)
             let
@@ -182,32 +170,6 @@
                     get-in rule $ [] :options :message
                     str "\"expects something, got " $ preview-data data
                 , ok-result
-        |validate-map $ quote
-          defn validate-map (data rule base-coord)
-            let
-                key-rule $ &map:get rule :key-shape
-                item-rule $ &map:get rule :item
-                coord $ append base-coord 'map
-              if (map? data)
-                apply-args
-                    to-pairs data
-                  fn (xs)
-                    if (empty? xs) ok-result $ let
-                        x0 $ first xs
-                        k $ first x0
-                        v $ last x0
-                        child-coord $ append coord k
-                        k-result $ validate-lilac k key-rule child-coord
-                        result $ validate-lilac v item-rule child-coord
-                      if (&map:get k-result :ok?)
-                        if (&map:get result :ok?)
-                          recur $ rest xs
-                          , result
-                        , k-result
-                {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ either
-                    get-in rule $ [] :options :message
-                    str "\"expects a map, got " $ preview-data data
         |validate-nil $ quote
           defn validate-nil (data rule coord)
             let
@@ -257,7 +219,7 @@
               {} (:lilac-type :pick-type) (:dict dict) (:options options)
                 :type-field $ either (:type-field options) :type
         |core-methods $ quote
-          def core-methods $ {} (:boolean validate-boolean) (:string validate-string) (:nil validate-nil) (:fn validate-fn) (:keyword validate-keyword) (:symbol validate-symbol) (:number validate-number) (:record validate-record) (:map validate-map) (:list validate-list) (:set validate-set) (:not validate-not) (:or validate-or) (:and validate-and) (:custom validate-custom) (:component validate-component) (:is validate-is) (:optional validate-optional) (:tuple validate-tuple) (:any validate-any) (:enum validate-enum) (:pick-type validate-pick-type)
+          def core-methods $ {} (:bool validate-bool) (:string validate-string) (:nil validate-nil) (:fn validate-fn) (:keyword validate-keyword) (:symbol validate-symbol) (:number validate-number) (:record validate-record) (:dict validate-dict) (:list validate-list) (:set validate-set) (:not validate-not) (:or validate-or) (:and validate-and) (:custom validate-custom) (:component validate-component) (:is validate-is) (:optional validate-optional) (:tuple validate-tuple) (:any validate-any) (:enum validate-enum) (:pick-type validate-pick-type)
         |number+ $ quote
           defn number+ (? arg)
             let
@@ -281,6 +243,14 @@
             {} $ :lilac-type :symbol
         |ok-result $ quote
           def ok-result $ {} (:ok? true)
+        |bool+ $ quote
+          defn bool+ (? arg)
+            {} $ :lilac-type :bool
+        |dict+ $ quote
+          defn dict+ (key-shape item ? arg)
+            let
+                options $ either arg ({})
+              {} (:lilac-type :dict) (:key-shape key-shape) (:item item) (:options options)
         |enum+ $ quote
           defn enum+ (items ? arg)
             {} (:lilac-type :enum)
@@ -302,6 +272,39 @@
                 item $ &map:get rule :item
                 coord $ append base-coord 'optional
               if (nil? data) ok-result $ validate-lilac data item coord
+        |validate-bool $ quote
+          defn validate-bool (data rule coord)
+            if (bool? data) ok-result $ {} (:ok? false) (:data data) (:rule rule)
+              :coord $ append coord 'bool
+              :message $ either
+                get-in rule $ [] :options :message
+                str "\"expects a bool, got " $ preview-data data
+        |validate-dict $ quote
+          defn validate-dict (data rule base-coord)
+            let
+                key-rule $ &map:get rule :key-shape
+                item-rule $ &map:get rule :item
+                coord $ append base-coord 'dict
+              if (map? data)
+                apply-args
+                    to-pairs data
+                  fn (xs)
+                    if (empty? xs) ok-result $ let
+                        x0 $ first xs
+                        k $ first x0
+                        v $ last x0
+                        child-coord $ append coord k
+                        k-result $ validate-lilac k key-rule child-coord
+                        result $ validate-lilac v item-rule child-coord
+                      if (&map:get k-result :ok?)
+                        if (&map:get result :ok?)
+                          recur $ rest xs
+                          , result
+                        , k-result
+                {} (:ok? false) (:data data) (:rule rule) (:coord coord)
+                  :message $ either
+                    get-in rule $ [] :options :message
+                    str "\"expects a dict, got " $ preview-data data
         |validate-enum $ quote
           defn validate-enum (data rule base-coord)
             let
@@ -434,9 +437,6 @@
                   :message $ either
                     get-in rule $ [] :options :message
                     str "\"expects a number, got " $ preview-data data
-        |boolean+ $ quote
-          defn boolean+ (? arg)
-            {} $ :lilac-type :boolean
         |register-custom-rule! $ quote
           defn register-custom-rule! (type-name f)
             assert "\"expects type name in keyword" $ keyword? type-name
@@ -597,7 +597,7 @@
       :ns $ quote
         ns lilac.test $ :require
           calcit-test.core :refer $ deftest is testing
-          lilac.core :refer $ validate-lilac deflilac optional+ keyword+ boolean+ number+ string+ custom+ tuple+ list+ record+ enum+ map+ any+ and+ nil+ or+ is+ pick-type+ register-custom-rule!
+          lilac.core :refer $ validate-lilac deflilac optional+ keyword+ bool+ number+ string+ custom+ tuple+ list+ record+ enum+ dict+ any+ and+ nil+ or+ is+ pick-type+ register-custom-rule!
           lilac.router :refer $ lilac-router+ router-data
           calcit-test.core :refer $ *quit-on-failure?
       :defs $ {}
@@ -730,15 +730,15 @@
               =ok true $ validate-lilac ([])
                 tuple+ ([])
                   {} $ :in-list? true
-            testing "\"tuple of number string boolean" $ is
+            testing "\"tuple of number string bool" $ is
               =ok true $ validate-lilac ([] 1 "\"1" true)
-                tuple+ $ [] (number+) (string+) (boolean+)
+                tuple+ $ [] (number+) (string+) (bool+)
             testing "\"tuple not vector" $ is
               =ok true $ validate-lilac ([] 1 "\"1" true)
-                tuple+ $ [] (number+) (string+) (boolean+)
+                tuple+ $ [] (number+) (string+) (bool+)
             testing "\"tuple not right type" $ is
               =ok false $ validate-lilac ([] 1 "\"1" true)
-                tuple+ $ [] (number+) (number+) (boolean+)
+                tuple+ $ [] (number+) (number+) (bool+)
             testing "\"tuple not right type" $ is
               =ok false $ validate-lilac ([] 1 "\"1")
                 tuple+
@@ -797,7 +797,7 @@
                         :size $ number+
                   {} $ :type-field :branch
         |run-tests $ quote
-          defn run-tests () (test-or) (test-and) (test-nil) (test-any) (test-map) (test-enum) (test-list) (test-tuple) (test-record) (test-custom) (test-number) (test-string) (test-boolean) (test-optional) (test-pick-type) (test-router-config) (test-component-args) (test-optional-record)
+          defn run-tests () (test-or) (test-and) (test-nil) (test-any) (test-dict) (test-enum) (test-list) (test-tuple) (test-record) (test-custom) (test-number) (test-string) (test-boolean) (test-optional) (test-pick-type) (test-router-config) (test-component-args) (test-optional-record)
         |=ok $ quote
           defn =ok (x obj)
             = x $ :ok? obj
@@ -841,35 +841,35 @@
             testing "\"need something" $ is
               =ok false $ validate-lilac nil
                 any+ $ {} (:some? true)
-        |test-map $ quote
-          deftest test-map
-            testing "\"a map of strings" $ is
-              =ok true $ validate-lilac
-                {} ("\"a" "\"a") ("\"b" "\"b")
-                map+ (string+) (string+)
-            testing "\"a map of strings has no keyword" $ is
-              =ok false $ validate-lilac
-                {} (:a "\"a") ("\"b" "\"b")
-                map+ (string+) (string+)
-            testing "\"a map of keyword/number" $ is
-              =ok true $ validate-lilac
-                {} (:a 1) (:b 2)
-                map+ (keyword+) (number+)
-            testing "\"a map of keyword/number not number/keyword" $ is
-              =ok false $ validate-lilac
-                {} (:a 1) (2 :b)
-                map+ (keyword+) (number+)
-            testing "\"a map of keyword/number or keyword/string" $ is
-              =ok true $ validate-lilac
-                {} (:a 1) (:b "\"two")
-                map+ (keyword+)
-                  or+ $ [] (number+) (string+)
         |test-nil $ quote
           deftest test-nil
             testing "\"a nil" $ is
               =ok true $ validate-lilac nil (nil+)
             testing "\"string not nil" $ is
               =ok false $ validate-lilac "\"x" (nil+)
+        |test-dict $ quote
+          deftest test-dict
+            testing "\"a dict of strings" $ is
+              =ok true $ validate-lilac
+                {} ("\"a" "\"a") ("\"b" "\"b")
+                dict+ (string+) (string+)
+            testing "\"a dict of strings has no keyword" $ is
+              =ok false $ validate-lilac
+                {} (:a "\"a") ("\"b" "\"b")
+                dict+ (string+) (string+)
+            testing "\"a dict of keyword/number" $ is
+              =ok true $ validate-lilac
+                {} (:a 1) (:b 2)
+                dict+ (keyword+) (number+)
+            testing "\"a dict of keyword/number not number/keyword" $ is
+              =ok false $ validate-lilac
+                {} (:a 1) (2 :b)
+                dict+ (keyword+) (number+)
+            testing "\"a dict of keyword/number or keyword/string" $ is
+              =ok true $ validate-lilac
+                {} (:a 1) (:b "\"two")
+                dict+ (keyword+)
+                  or+ $ [] (number+) (string+)
         |test-enum $ quote
           deftest test-enum
             testing "\"1 in enum" $ is
@@ -886,24 +886,24 @@
                 enum+ $ [] 1 2 3
         |test-list $ quote
           deftest test-list
-            testing "\"a list of boolean" $ is
+            testing "\"a list of bool" $ is
               =ok true $ validate-lilac ([] true true false)
-                list+ $ boolean+
+                list+ $ bool+
             testing "\"a empty list" $ is
               =ok true $ validate-lilac ([])
-                list+ $ boolean+
+                list+ $ bool+
             testing "\"nil is not a list" $ is
               =ok false $ validate-lilac nil
-                list+ $ boolean+
+                list+ $ bool+
             testing "\"a list of string is not list of boolean" $ is
               =ok false $ validate-lilac ([] "\"true" "\"false")
-                list+ $ boolean+
+                list+ $ bool+
             testing "\"vector is not a empty vector" $ is
               =ok true $ validate-lilac ([])
-                list+ $ boolean+
-            testing "\"boolean is not a empty vector" $ is
+                list+ $ bool+
+            testing "\"bool is not a empty vector" $ is
               =ok false $ validate-lilac false
-                list+ $ boolean+
+                list+ $ bool+
             testing "\"allow seq for list" $ is
               =ok true $ validate-lilac
                 concat ([] 1) ([] 2)
@@ -913,15 +913,15 @@
           deflilac lilac-good-number+ (n)
             number+ $ {} (:min n)
         |test-boolean $ quote
-          deftest test-boolean
-            testing "\"true is boolean" $ is
-              =ok true $ validate-lilac true (boolean+)
-            testing "\"false is boolean" $ is
-              =ok true $ validate-lilac false (boolean+)
-            testing "\"nil is no a boolean" $ is
-              =ok false $ validate-lilac nil (boolean+)
-            testing "\"string is no a boolean" $ is
-              =ok false $ validate-lilac "\"x" (boolean+)
+          deftest test-bool
+            testing "\"true is bool" $ is
+              =ok true $ validate-lilac true (bool+)
+            testing "\"false is bool" $ is
+              =ok true $ validate-lilac false (bool+)
+            testing "\"nil is no a bool" $ is
+              =ok false $ validate-lilac nil (bool+)
+            testing "\"string is no a bool" $ is
+              =ok false $ validate-lilac "\"x" (bool+)
         |test-optional $ quote
           deftest test-optional
             testing "\"optional value" $ is
