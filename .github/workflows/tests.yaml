@@ -30,10 +30,10 @@ jobs:
         && git clone https://github.com/calcit-lang/calcit-test
 
     - name: "test"
-      run: cr --entry test -1
+      run: mode=dev cr --entry test -1
 
     - name: "test js"
       run: >
         yarn
-        && cr --entry test -1 --emit-js
-        && node test.mjs
+        && mode=dev cr --entry test -1 --emit-js
+        && mode=dev node test.mjs
