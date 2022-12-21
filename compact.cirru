@@ -1,6 +1,6 @@
 
 {} (:package |lilac)
-  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.2.1)
+  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.2.2)
     :modules $ [] |calcit-test/compact.cirru
   :entries $ {}
     :test $ {} (:init-fn |lilac.test/main!) (:reload-fn |lilac.test/reload!)
@@ -34,13 +34,13 @@
                 options $ either arg ({})
               {} (:lilac-type :custom) (:fn f) (:options options)
         |deflilac $ quote
-          defmacro deflilac (comp-name args body)
+          defmacro deflilac (comp-name args & body)
             quasiquote $ defn (~ comp-name) (~ args)
               {} (:lilac-type :component)
                 :name $ quote
                   ~ $ turn-keyword comp-name
                 :args $ [] (~@ args)
-                :fn $ fn (~ args) (~ body)
+                :fn $ fn (~ args) (~@ body)
         |dev-check $ quote
           defmacro dev-check (data rule)
             let
@@ -72,7 +72,7 @@
                   set? items
                   , items
                 (list? items) (#{} & items)
-                :else $ do (echo "\"Lilac warning: unknown items" items) items
+                true $ do (echo "\"Lilac warning: unknown items" items) items
         |fn+ $ quote
           defn fn+ (? arg)
             let
@@ -512,7 +512,7 @@
                         :message $ either
                           get-in rule $ [] :options :message
                           str "\"expects a string in " re "\", got " $ preview-data data
-                      println "\"re-matches is not supported"
+                      eprintln "\"re-matches is not supported"
                   (some? nonblank?)
                     if
                       and nonblank? $ = | (trim data)

@@ -1,6 +1,6 @@
 
 {}
-  :configs $ {} (:init-fn |lilac.main/main!) (:local-storage-key |calcit-storage) (:port 6001) (:reload-fn |lilac.main/reload!) (:storage-key |calcit.cirru) (:version |0.2.1)
+  :configs $ {} (:init-fn |lilac.main/main!) (:local-storage-key |calcit-storage) (:port 6001) (:reload-fn |lilac.main/reload!) (:storage-key |calcit.cirru) (:version |0.2.2)
     :modules $ [] |calcit-test/compact.cirru
   :entries $ {}
     :test $ {} (:init-fn |lilac.test/main!) (:reload-fn |lilac.test/reload!)
@@ -270,6 +270,7 @@
                 :data $ {}
                   |T $ {} (:at 1606986921916) (:by |yeKFqj7rX) (:text |comp-name) (:type :leaf)
                   |j $ {} (:at 1606986922564) (:by |yeKFqj7rX) (:text |args) (:type :leaf)
+                  |n $ {} (:at 1670553330502) (:by |yeKFqj7rX) (:text |&) (:type :leaf)
                   |r $ {} (:at 1606986923559) (:by |yeKFqj7rX) (:text |body) (:type :leaf)
               |v $ {} (:at 1606986924750) (:by |yeKFqj7rX) (:type :expr)
                 :data $ {}
@@ -327,7 +328,7 @@
                                       |r $ {} (:at 1606987075452) (:by |yeKFqj7rX) (:text |args) (:type :leaf)
                                   |r $ {} (:at 1606987078987) (:by |yeKFqj7rX) (:type :expr)
                                     :data $ {}
-                                      |T $ {} (:at 1606987082976) (:by |yeKFqj7rX) (:text |~) (:type :leaf)
+                                      |T $ {} (:at 1670553333350) (:by |yeKFqj7rX) (:text |~@) (:type :leaf)
                                       |j $ {} (:at 1606987083585) (:by |yeKFqj7rX) (:text |body) (:type :leaf)
           |dev-check $ {} (:at 1606987711701) (:by |yeKFqj7rX) (:type :expr)
             :data $ {}
@@ -523,7 +524,7 @@
                                   |j $ {} (:at 1581955531888) (:by |yeKFqj7rX) (:id |FD5-CX976) (:text |items) (:type :leaf)
                           |v $ {} (:at 1581955466905) (:by |yeKFqj7rX) (:id |x17N45dnZ) (:type :expr)
                             :data $ {}
-                              |T $ {} (:at 1581955467652) (:by |yeKFqj7rX) (:id |x17N45dnZleaf) (:text |:else) (:type :leaf)
+                              |T $ {} (:at 1670553021101) (:by |yeKFqj7rX) (:id |x17N45dnZleaf) (:text |true) (:type :leaf)
                               |j $ {} (:at 1581955534527) (:by |yeKFqj7rX) (:id |P3hYGAFi) (:type :expr)
                                 :data $ {}
                                   |D $ {} (:at 1581955536189) (:by |yeKFqj7rX) (:id |7zDFj9Whv) (:text |do) (:type :leaf)
@@ -3946,7 +3947,7 @@
                                                           |j $ {} (:at 1579852831127) (:by |yeKFqj7rX) (:id |3Y7dh4SQ0) (:text |data) (:type :leaf)
                                   |j $ {} (:at 1633238490948) (:by |yeKFqj7rX) (:type :expr)
                                     :data $ {}
-                                      |T $ {} (:at 1633238491921) (:by |yeKFqj7rX) (:text |println) (:type :leaf)
+                                      |T $ {} (:at 1670553099303) (:by |yeKFqj7rX) (:text |eprintln) (:type :leaf)
                                       |j $ {} (:at 1633238505167) (:by |yeKFqj7rX) (:text "|\"re-matches is not supported") (:type :leaf)
                           |b $ {} (:at 1580051674069) (:by |yeKFqj7rX) (:id |IhNn6XM3) (:type :expr)
                             :data $ {}
