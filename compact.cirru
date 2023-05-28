@@ -1,6 +1,6 @@
 
 {} (:package |lilac)
-  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.2.2)
+  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.3.0-a1)
     :modules $ [] |calcit-test/compact.cirru
   :entries $ {}
     :test $ {} (:init-fn |lilac.test/main!) (:reload-fn |lilac.test/reload!)
@@ -27,7 +27,7 @@
           defn bool+ (? arg)
             {} $ :lilac-type :bool
         |core-methods $ quote
-          def core-methods $ {} (:bool validate-bool) (:string validate-string) (:nil validate-nil) (:fn validate-fn) (:keyword validate-keyword) (:symbol validate-symbol) (:number validate-number) (:record validate-record) (:dict validate-dict) (:list validate-list) (:set validate-set) (:not validate-not) (:or validate-or) (:and validate-and) (:custom validate-custom) (:component validate-component) (:is validate-is) (:optional validate-optional) (:tuple validate-tuple) (:any validate-any) (:enum validate-enum) (:pick-type validate-pick-type)
+          def core-methods $ {} (:bool validate-bool) (:string validate-string) (:nil validate-nil) (:fn validate-fn) (:tag validate-tag) (:symbol validate-symbol) (:number validate-number) (:record validate-record) (:dict validate-dict) (:list validate-list) (:set validate-set) (:not validate-not) (:or validate-or) (:and validate-and) (:custom validate-custom) (:component validate-component) (:is validate-is) (:optional validate-optional) (:tuple validate-tuple) (:any validate-any) (:enum validate-enum) (:pick-type validate-pick-type)
         |custom+ $ quote
           defn custom+ (f ? arg)
             let
@@ -38,7 +38,7 @@
             quasiquote $ defn (~ comp-name) (~ args)
               {} (:lilac-type :component)
                 :name $ quote
-                  ~ $ turn-keyword comp-name
+                  ~ $ turn-tag comp-name
                 :args $ [] (~@ args)
                 :fn $ fn (~ args) (~@ body)
         |dev-check $ quote
@@ -93,11 +93,6 @@
             let
                 options $ either arg ({})
               {} (:lilac-type :is) (:item x)
-        |keyword+ $ quote
-          defn keyword+ (? arg)
-            let
-                options $ either arg ({})
-              {} (:lilac-type :keyword) (:options options)
         |list+ $ quote
           defn list+ (item ? arg)
             let
@@ -157,7 +152,7 @@
                 :proto $ :proto options
         |register-custom-rule! $ quote
           defn register-custom-rule! (type-name f)
-            assert "\"expects type name in keyword" $ keyword? type-name
+            assert "\"expects type name in tag" $ tag? type-name
             assert "\"expects validation method in function" $ fn? f
             println "\"registering validation rule" type-name
             swap! *custom-methods assoc type-name f
@@ -178,6 +173,11 @@
         |symbol+ $ quote
           defn symbol+ (? arg)
             {} $ :lilac-type :symbol
+        |tag+ $ quote
+          defn tag+ (? arg)
+            let
+                options $ either arg ({})
+              {} (:lilac-type :tag) (:options options)
         |tuple+ $ quote
           defn tuple+ (items ? arg)
             let
@@ -294,14 +294,6 @@
                     str "\"expects just "
                       preview-data $ :item rule
                       , "\", got " $ preview-data data
-        |validate-keyword $ quote
-          defn validate-keyword (data rule coord)
-            let
-                next-coord $ append coord 'keyword
-              if (keyword? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                :message $ either
-                  get-in rule $ [] :options :message
-                  str "\"expects a keyword, got " $ preview-data data
         |validate-lilac $ quote
           defn validate-lilac (data rule ? arg) (; println "\"got rule:" rule)
             let
@@ -534,6 +526,14 @@
                 :message $ either
                   get-in rule $ [] :options :message
                   str "\"expects a symbol, got " $ preview-data data
+        |validate-tag $ quote
+          defn validate-tag (data rule coord)
+            let
+                next-coord $ append coord 'tag
+              if (tag? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
+                :message $ either
+                  get-in rule $ [] :options :message
+                  str "\"expects a tag, got " $ preview-data data
         |validate-tuple $ quote
           defn validate-tuple (data rule coord)
             let
@@ -639,7 +639,7 @@
                         :delete $ {} (:code 202) (:type :file) (:file "\"ok.json")
       :ns $ quote
         ns lilac.router $ :require
-          [] lilac.core :refer $ [] validate-lilac deflilac optional+ keyword+ boolean+ number+ string+ custom+ list+ record+ and+ nil+ or+ is+
+          [] lilac.core :refer $ [] validate-lilac deflilac optional+ tag+ boolean+ number+ string+ custom+ list+ record+ and+ nil+ or+ is+
     |lilac.test $ {}
       :defs $ {}
         |=ok $ quote
@@ -724,22 +724,22 @@
               =ok true $ validate-lilac
                 {} ("\"a" "\"a") ("\"b" "\"b")
                 dict+ (string+) (string+)
-            testing "\"a dict of strings has no keyword" $ is
+            testing "\"a dict of strings has no tag" $ is
               =ok false $ validate-lilac
                 {} (:a "\"a") ("\"b" "\"b")
                 dict+ (string+) (string+)
-            testing "\"a dict of keyword/number" $ is
+            testing "\"a dict of tag/number" $ is
               =ok true $ validate-lilac
                 {} (:a 1) (:b 2)
-                dict+ (keyword+) (number+)
-            testing "\"a dict of keyword/number not number/keyword" $ is
+                dict+ (tag+) (number+)
+            testing "\"a dict of tag/number not number/tag" $ is
               =ok false $ validate-lilac
                 {} (:a 1) (2 :b)
-                dict+ (keyword+) (number+)
-            testing "\"a dict of keyword/number or keyword/string" $ is
+                dict+ (tag+) (number+)
+            testing "\"a dict of tag/number or tag/string" $ is
               =ok true $ validate-lilac
                 {} (:a 1) (:b "\"two")
-                dict+ (keyword+)
+                dict+ (tag+)
                   or+ $ [] (number+) (string+)
         |test-enum $ quote
           deftest test-enum
@@ -790,7 +790,7 @@
           deftest test-number
             testing "\"a number" $ is
               =ok true $ validate-lilac 1 (number+)
-            testing "\"keyword not a number" $ is
+            testing "\"tag not a number" $ is
               =ok false $ validate-lilac :k (number+)
             testing "\"nil not a number" $ is
               =ok false $ validate-lilac nil (number+)
@@ -837,7 +837,7 @@
             testing "\"number or string" $ is
               =ok true $ validate-lilac "\"10"
                 or+ $ [] (number+) (string+)
-            testing "\"keyword is not number or string" $ is
+            testing "\"tag is not number or string" $ is
               =ok false $ validate-lilac :x
                 or+ $ [] (number+) (string+)
         |test-pick-type $ quote
@@ -900,7 +900,7 @@
                     1 $ number+
                     2 $ number+
                   , nil
-            testing "\"a record of numbers of not keyword/number" $ is
+            testing "\"a record of numbers of not tag/number" $ is
               =ok false $ validate-lilac
                 {} (:a 100) (:b 200)
                 record+
@@ -1006,7 +1006,7 @@
               =ok true $ validate-lilac "\"x" (string+)
             testing "\"nil not a string" $ is
               =ok false $ validate-lilac nil (string+)
-            testing "\"keyword not a string" $ is
+            testing "\"tag not a string" $ is
               =ok false $ validate-lilac :x (string+)
             testing "\"blank string" $ is
               =ok true $ validate-lilac "\""
@@ -1057,7 +1057,7 @@
       :ns $ quote
         ns lilac.test $ :require
           calcit-test.core :refer $ deftest is testing
-          lilac.core :refer $ validate-lilac deflilac optional+ keyword+ bool+ number+ string+ custom+ tuple+ list+ record+ enum+ dict+ any+ and+ nil+ or+ is+ pick-type+ register-custom-rule!
+          lilac.core :refer $ validate-lilac deflilac optional+ tag+ bool+ number+ string+ custom+ tuple+ list+ record+ enum+ dict+ any+ and+ nil+ or+ is+ pick-type+ register-custom-rule!
           lilac.router :refer $ lilac-router+ router-data
           calcit-test.core :refer $ *quit-on-failure?
     |lilac.util $ {}
@@ -1084,7 +1084,7 @@
                 pr-str x
               (bool? x) (str x)
               (number? x) (str x)
-              (keyword? x) (str x)
+              (tag? x) (str x)
               (symbol? x) (str "\"'" x)
               (map? x) "\"a map"
               (set? x) "\"a set"
