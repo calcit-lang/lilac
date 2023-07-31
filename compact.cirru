@@ -1,6 +1,6 @@
 
 {} (:package |lilac)
-  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.3.0-a1)
+  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.3.1)
     :modules $ [] |calcit-test/compact.cirru
   :entries $ {}
     :test $ {} (:init-fn |lilac.test/main!) (:reload-fn |lilac.test/reload!)
@@ -249,18 +249,19 @@
                 apply-args
                     to-pairs data
                   fn (xs)
-                    if (empty? xs) ok-result $ let
-                        x0 $ first xs
-                        k $ first x0
-                        v $ last x0
-                        child-coord $ append coord k
-                        k-result $ validate-lilac k key-rule child-coord
-                        result $ validate-lilac v item-rule child-coord
-                      if (&map:get k-result :ok?)
-                        if (&map:get result :ok?)
-                          recur $ rest xs
-                          , result
-                        , k-result
+                    tag-match (destruct-set xs)
+                        :none
+                        , ok-result
+                      (:some x0 ys)
+                        let
+                            k $ first x0
+                            v $ last x0
+                            child-coord $ append coord k
+                            k-result $ validate-lilac k key-rule child-coord
+                            result $ validate-lilac v item-rule child-coord
+                          if (&map:get k-result :ok?)
+                            if (&map:get result :ok?) (recur ys) result
+                            , k-result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either
                     get-in rule $ [] :options :message
@@ -428,20 +429,21 @@
                 check-values $ fn ()
                   loop
                       xs $ to-pairs pairs
-                    if (empty? xs) ok-result $ let
-                        x0 $ first xs
-                        k0 $ first x0
-                        r0 $ last x0
-                        child-coord $ append coord k0
-                        v $ get data k0
-                      if
-                        and all-optional? $ nil? v
-                        recur $ rest xs
+                    tag-match (destruct-set xs)
+                        :none
+                        , ok-result
+                      (:some x0 ys)
                         let
-                            result $ validate-lilac v r0 child-coord
-                          if (:ok? result)
-                            recur $ rest xs
-                            , result
+                            k0 $ first x0
+                            r0 $ last x0
+                            child-coord $ append coord k0
+                            v $ get data k0
+                          if
+                            and all-optional? $ nil? v
+                            recur ys
+                            let
+                                result $ validate-lilac v r0 child-coord
+                              if (:ok? result) (recur ys) result
               if
                 not $ or (map? data)
                   and (record? data)
@@ -1068,15 +1070,16 @@
                 real-keys $ keys data
               apply-args (real-keys)
                 fn (xs)
-                  if
-                    not $ empty? xs
-                    &let
-                      k $ first xs
-                      when
-                        not $ any? defined-keys
-                          fn (x) (= k x)
-                        echo "\"Lilac warning:" message "\"unexpected key" (pr-str k) "\", expect" $ pr-str xs
-                      recur $ rest xs
+                  tag-match (destruct-set xs)
+                      :none
+                      , nil
+                    (:some k ys)
+                      do
+                        when
+                          not $ any? defined-keys
+                            fn (x) (= k x)
+                          echo "\"Lilac warning:" message "\"unexpected key" (pr-str k) "\", expect" $ pr-str xs
+                        recur ys
         |preview-data $ quote
           defn preview-data (x)
             cond
