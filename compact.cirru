@@ -1,6 +1,6 @@
 
 {} (:package |lilac)
-  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.3.1)
+  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.3.2)
     :modules $ [] |calcit-test/compact.cirru
   :entries $ {}
     :test $ {} (:init-fn |lilac.test/main!) (:reload-fn |lilac.test/reload!)
@@ -193,16 +193,17 @@
                 next-coord $ append base-coord 'and
               apply-args (items)
                 fn (xs)
-                  if (empty? xs) ok-result $ let
-                      r0 $ first xs
-                      result $ validate-lilac data r0 next-coord
-                    if (&map:get result :ok?)
-                      recur $ rest xs
-                      {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                        :message $ either
-                          get-in rule $ [] :options :message
-                          , "\"failed validating in \"and\""
-                        :next result
+                  list-match xs
+                    () ok-result
+                    (r0 rs)
+                      let
+                          result $ validate-lilac data r0 next-coord
+                        if (&map:get result :ok?) (recur rs)
+                          {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
+                            :message $ either
+                              get-in rule $ [] :options :message
+                              , "\"failed validating in \"and\""
+                            :next result
         |validate-any $ quote
           defn validate-any (data rule base-coord)
             let
@@ -316,13 +317,15 @@
               if (list? data)
                 apply-args (data 0)
                   fn (xs idx)
-                    if (empty? xs) ok-result $ let
-                        x0 $ first xs
-                        child-coord $ append coord idx
-                        result $ validate-lilac x0 item-rule child-coord
-                      if (&map:get result :ok?)
-                        recur (rest xs) (inc idx)
-                        , result
+                    list-match xs
+                      () ok-result
+                      (x0 xss)
+                        let
+                            child-coord $ append coord idx
+                            result $ validate-lilac x0 item-rule child-coord
+                          if (&map:get result :ok?)
+                            recur xss $ inc idx
+                            , result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either
                     get-in rule $ [] :options :message
@@ -381,17 +384,17 @@
               apply-args
                 items $ []
                 fn (xs branches)
-                  if (empty? xs)
-                    {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
+                  list-match xs
+                      r0 rs
+                      let
+                          result $ validate-lilac data r0 next-coord
+                        if (&map:get result :ok?) result $ recur rs (append branches result)
+                    () $ {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
                       :message $ either
                         get-in rule $ [] :options :message
                         , "\"found no matched case in \"or\""
                       :branches branches
                       :next $ last branches
-                    let
-                        r0 $ first xs
-                        result $ validate-lilac data r0 next-coord
-                      if (&map:get result :ok?) result $ recur (rest xs) (append branches result)
         |validate-pick-type $ quote
           defn validate-pick-type (data rule coord)
             let
@@ -481,13 +484,15 @@
                 loop
                     xs data
                     idx 0
-                  if (empty? xs) ok-result $ let
-                      x0 $ first xs
-                      child-coord $ append coord idx
-                      result $ validate-lilac x0 item-rule child-coord
-                    if (:ok? result)
-                      recur (rest xs) (inc idx)
-                      , result
+                  list-match xs
+                    () ok-result
+                    (x0 xss)
+                      let
+                          child-coord $ append coord idx
+                          result $ validate-lilac x0 item-rule child-coord
+                        if (:ok? result)
+                          recur xss $ inc idx
+                          , result
                 {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                   :message $ either
                     get-in rule $ [] :options :message
