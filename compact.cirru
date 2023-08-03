@@ -1,6 +1,6 @@
 
 {} (:package |lilac)
-  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.3.2)
+  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.3.3)
     :modules $ [] |calcit-test/compact.cirru
   :entries $ {}
     :test $ {} (:init-fn |lilac.test/main!) (:reload-fn |lilac.test/reload!)
@@ -385,16 +385,16 @@
                 items $ []
                 fn (xs branches)
                   list-match xs
-                      r0 rs
-                      let
-                          result $ validate-lilac data r0 next-coord
-                        if (&map:get result :ok?) result $ recur rs (append branches result)
                     () $ {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
                       :message $ either
                         get-in rule $ [] :options :message
                         , "\"found no matched case in \"or\""
                       :branches branches
                       :next $ last branches
+                    (r0 rs)
+                      let
+                          result $ validate-lilac data r0 next-coord
+                        if (&map:get result :ok?) result $ recur rs (append branches result)
         |validate-pick-type $ quote
           defn validate-pick-type (data rule coord)
             let
