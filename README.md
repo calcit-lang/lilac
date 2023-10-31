@@ -2,12 +2,10 @@
 Lilac in Calcit
 ----
 
-> migrated from https://github.com/mvc-works/lilac .
-
 Difference:
 
-* `vector+` is removed since there's only List in Calcit Runner.
-* string based `re-matches` in Calcit Runner is very slow since
+* `vector+` is removed since there's only "List" in Calcit.
+* string based `re-matches` in Calcit is very slow since
 
 ### Usages
 
@@ -22,6 +20,8 @@ cr --entry test
 ### Workflow
 
 https://github.com/calcit-lang/calcit-workflow
+
+Origin https://github.com/mvc-works/lilac
 
 ### License
 

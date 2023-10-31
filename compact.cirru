@@ -1,6 +1,6 @@
 
 {} (:package |lilac)
-  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.4.0-a2)
+  :configs $ {} (:init-fn |lilac.main/main!) (:reload-fn |lilac.main/reload!) (:version |0.5.0-a1)
     :modules $ [] |calcit-test/compact.cirru
   :entries $ {}
     :test $ {} (:init-fn |lilac.test/main!) (:reload-fn |lilac.test/reload!)
@@ -212,7 +212,7 @@
             defn tuple+ (items ? arg)
               let
                   options $ either arg ({})
-                assert "\"expects items of tuple+ in vector" $ list? items
+                assert "\"expects items of tuple+ in vector" $ tuple? items
                 check-keys "\"checking tuple+" options $ [] :in-list? :check-size?
                 {} (:lilac-type :tuple) (:items items) (:options options)
                   :check-size? $ :check-size? options
@@ -599,36 +599,29 @@
               let
                   items $ &map:get rule :items
                   next-coord $ append coord 'tuple
-                  check-size? $ either (&map:get rule :check-size?) false
-                  check-values $ fn ()
-                    loop
-                        xs items
-                        ys data
-                        idx 0
-                      if (empty? xs)
-                        if check-size?
-                          if
-                            and (empty? ys)
-                              = (count items) (count data)
-                            {} $ :ok? true
-                            {} (:ok? false) (:coord next-coord) (:rule rule) (:data ys)
-                              :message $ either
-                                get-in rule $ [] :options :message
-                                str "\"expects tuple of " (count items) "\" items, got " $ count data
-                          , ok-result
-                        let
-                            r0 $ first xs
-                            y0 $ first ys
-                            child-coord $ append next-coord idx
-                            result $ validate-lilac y0 r0 child-coord
-                          if (:ok? result)
-                            recur (rest xs) (rest ys) (inc idx)
-                            {} (:ok? false) (:coord next-coord) (:rule rule) (:data y0)
-                              :message $ either
-                                get-in rule $ [] :options :message
-                                , "\"failed validating in \"tuple\""
-                              :next result
-                if (list? data) (check-values)
+                if (tuple? data)
+                  if
+                    = (count data) (count items)
+                    let
+                        size $ count data
+                      loop
+                          idx 0
+                        if (< idx size)
+                          let
+                              r0 $ &tuple:nth items idx
+                              y0 $ &tuple:nth data idx
+                              child-coord $ append next-coord idx
+                              result $ validate-lilac y0 r0 child-coord
+                            if (:ok? result)
+                              recur $ inc idx
+                              {} (:ok? false) (:coord next-coord) (:rule rule) (:data y0)
+                                :message $ either
+                                  get-in rule $ [] :options :message
+                                  , "\"failed validating in \"tuple\""
+                                :next result
+                          {} $ :ok? true
+                    {} (:ok? false) (:data data) (:rule rule) (:coord coord)
+                      :message $ str "\"expects rules in for tuple, got " (preview-data data)
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                     :message $ str "\"expects a vector for tuple, got " (preview-data data)
       :ns $ %{} :CodeEntry (:doc |)
@@ -1118,35 +1111,21 @@
         |test-tuple $ %{} :CodeEntry (:doc |)
           :code $ quote
             deftest test-tuple
-              testing "\"an empty tuple" $ is
-                =ok true $ validate-lilac ([])
-                  tuple+ $ []
-              testing "\"check an empty tuple in list" $ is
-                =ok true $ validate-lilac ([])
-                  tuple+ $ []
-              testing "\"an empty tuple in list" $ is
-                =ok true $ validate-lilac ([])
-                  tuple+ ([])
-                    {} $ :in-list? true
               testing "\"tuple of number string bool" $ is
-                =ok true $ validate-lilac ([] 1 "\"1" true)
-                  tuple+ $ [] (number+) (string+) (bool+)
+                =ok true $ w-log
+                  validate-lilac (:: 1 "\"1" true)
+                    tuple+ $ :: (number+) (string+) (bool+)
               testing "\"tuple not vector" $ is
-                =ok true $ validate-lilac ([] 1 "\"1" true)
-                  tuple+ $ [] (number+) (string+) (bool+)
+                =ok true $ validate-lilac (:: 1 "\"1" true)
+                  tuple+ $ :: (number+) (string+) (bool+)
               testing "\"tuple not right type" $ is
-                =ok false $ validate-lilac ([] 1 "\"1" true)
-                  tuple+ $ [] (number+) (number+) (bool+)
+                =ok false $ validate-lilac (:: 1 "\"1" true)
+                  tuple+ $ :: (number+) (number+) (bool+)
               testing "\"tuple not right type" $ is
-                =ok false $ validate-lilac ([] 1 "\"1")
+                =ok false $ validate-lilac (:: 1 "\"1")
                   tuple+
-                    [] $ number+
-                    {} $ :check-size? true
-              testing "\"tuple not right type" $ is
-                =ok true $ validate-lilac ([] 1 "\"1")
-                  tuple+
-                    [] $ number+
-                    {} $ :check-size? false
+                    :: $ number+
+                    {}
       :ns $ %{} :CodeEntry (:doc |)
         :code $ quote
           ns lilac.test $ :require
@@ -1187,6 +1166,7 @@
                 (set? x) "\"a set"
                 (list? x) "\"a list"
                 (nil? x) "\"nil"
+                (tuple? x) "\"tuple"
                 true $ str "\"Unknown: "
                   &str:slice (str x) 0 10
         |seq-difference $ %{} :CodeEntry (:doc |)
