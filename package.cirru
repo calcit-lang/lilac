@@ -1,4 +1,4 @@
 
 {}
   :dependencies $ {}
-    |calcit-lang/calcit-test |0.0.5
+    |calcit-lang/calcit-test |main
