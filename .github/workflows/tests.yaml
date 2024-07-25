@@ -19,7 +19,7 @@ jobs:
 
     - uses: calcit-lang/setup-cr@0.0.3
       with:
-        version: "0.8.45"
+        version: "0.9.0"
 
     - name: "test"
       run: caps --ci && mode=dev cr --entry test -1
@@ -27,5 +27,5 @@ jobs:
     - name: "test js"
       run: >
         yarn
-        && mode=dev cr --entry test -1 --emit-js
+        && mode=dev cr --entry test -1 js
         && mode=dev node test.mjs
