@@ -12,11 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
 
       - name: Setup Yarn Berry
         run: |
