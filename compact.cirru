@@ -762,7 +762,7 @@
       :ns $ %{} :NsEntry (:doc |)
         :code $ quote
           ns lilac.router $ :require
-            [] lilac.core :refer $ [] validate-lilac deflilac optional+ tag+ boolean+ number+ string+ custom+ list+ record+ and+ nil+ or+ is+
+            [] lilac.core :refer $ [] validate-lilac deflilac optional+ tag+ bool+ number+ string+ custom+ list+ record+ and+ nil+ or+ is+
     |lilac.test $ %{} :FileEntry
       :defs $ {}
         |=ok $ %{} :CodeEntry (:doc |) (:schema nil)
