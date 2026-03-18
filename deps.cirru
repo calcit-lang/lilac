@@ -1,5 +1,5 @@
 
 {}
-  :calcit-version |0.9.13
+  :calcit-version |0.12.9
   :dependencies $ {}
     |calcit-lang/calcit-test |main
