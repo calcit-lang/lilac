@@ -5,3 +5,8 @@
 js-out/
 
 node_modules/
+.yarn/
+.yarn/*.gz
+
+
+.DS_Store

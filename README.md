@@ -15,6 +15,8 @@ Run with Calcit:
 cr
 
 cr --entry test
+
+cr --entry test -w
 ```
 
 ### Workflow
