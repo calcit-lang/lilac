@@ -13,7 +13,7 @@ Lilac in Calcit
 > Existing users should plan a gradual migration away from Lilac. Keep the
 > current version pinned while replacing public validation rules at module
 > boundaries, then remove the dependency once callers use the typed Calcit
-> interfaces directly. This repository remains available as historical source,
+> interfaces directly. This repository remains available as a historical source,
 > but no compatibility guarantees are made for new Calcit versions.
 
 Difference:
