@@ -2,10 +2,10 @@
 {} (:about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `cr query` to inspect and `cr edit`/`cr tree` to modify. Run `cr docs agents --full` first. Manual edits must follow format and schema conventions, then run `cr edit format`.") (:package |lilac) (:version |0.5.1)
   :entries $ {}
     :default $ {} (:description |) (:init-fn 'lilac.main/main!) (:mode :native) (:reload-fn 'lilac.main/reload!)
-      :modules $ [] |calcit-test/
+      :modules $ []
       :type-slots $ {}
     :test $ {} (:description |) (:init-fn 'lilac.test/main!) (:mode :native) (:reload-fn 'lilac.test/reload!)
-      :modules $ [] |calcit-test/compact.cirru
+      :modules $ []
       :type-slots $ {}
   :files $ {}
     |lilac.core $ %{} 'FileEntry
@@ -19,7 +19,7 @@
           :code $ quote
             defn and+ (items ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 assert "|expects items of and+ in vector" $ list? items
                 {} (:lilac-type :and) (:items items) (:options options)
           :examples $ []
@@ -28,7 +28,7 @@
           :code $ quote
             defn any+ (? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 check-keys "|checking any+" options $ [] :some?
                 {} (:lilac-type :any) (:options options)
                   :some? $ option:unwrap-or (get options :some?) nil
@@ -49,7 +49,7 @@
           :code $ quote
             defn custom+ (f ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 {} (:lilac-type :custom) (:fn f) (:options options)
           :examples $ []
           :schema $ :: 'Dynamic
@@ -98,7 +98,7 @@
           :code $ quote
             defn dict+ (key-shape item ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 {} (:lilac-type :dict) (:key-shape key-shape) (:item item) (:options options)
           :examples $ []
           :schema $ :: 'Dynamic
@@ -117,7 +117,7 @@
           :code $ quote
             defn fn+ (? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 {} (:lilac-type :fn) (:options options)
           :examples $ []
           :schema $ :: 'Dynamic
@@ -129,7 +129,7 @@
                     option:unwrap-or (get result :message) nil
                     , "| at "
                       filter-not
-                        option:unwrap-or (get result :coord) nil
+                        option:unwrap-or (get result :coord) ([])
                         , symbol?
                 recur
                   str acc
@@ -142,7 +142,7 @@
           :code $ quote
             defn is+ (x ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 {} (:lilac-type :is) (:item x)
           :examples $ []
           :schema $ :: 'Dynamic
@@ -150,7 +150,7 @@
           :code $ quote
             defn list+ (item ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 check-keys "|checking list+" options $ [] :allow-seq?
                 {} (:lilac-type :list) (:item item) (:options options)
                   :allow-seq? $ option:unwrap-or (get options :allow-seq?) nil
@@ -172,7 +172,7 @@
           :code $ quote
             defn number+ (? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 check-keys "|checking number+" options $ [] :max :min
                 {} (:lilac-type :number)
                   :max $ option:unwrap-or (get options :max) nil
@@ -189,7 +189,7 @@
           :code $ quote
             defn optional+ (item ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 {} (:lilac-type :optional) (:item item) (:options options)
           :examples $ []
           :schema $ :: 'Dynamic
@@ -197,7 +197,7 @@
           :code $ quote
             defn or+ (items ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 assert "|expects items of or+ in vector" $ list? items
                 {} (:lilac-type :or) (:items items) (:options options)
           :examples $ []
@@ -206,7 +206,7 @@
           :code $ quote
             defn pick-type+ (dict ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 check-keys "|checking pick-type+" options $ [] :type-field
                 {} (:lilac-type :pick-type) (:dict dict) (:options options)
                   :type-field $ option:unwrap-or (get options :type-field) :type
@@ -216,7 +216,7 @@
           :code $ quote
             defn re+ (re ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 {} (:lilac-type :re) (:re re) (:options options)
           :examples $ []
           :schema $ :: 'Dynamic
@@ -224,7 +224,7 @@
           :code $ quote
             defn record+ (pairs ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 check-keys "|checking record+" options $ [] :exact-keys? :check-keys? :all-optional? :proto
                 {} (:lilac-type :record) (:pairs pairs) (:options options)
                   :exact-keys? $ option:unwrap-or (get options :exact-keys?) false
@@ -246,7 +246,7 @@
           :code $ quote
             defn set+ (item ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 {} (:lilac-type :set) (:item item) (:options options)
           :examples $ []
           :schema $ :: 'Dynamic
@@ -254,7 +254,7 @@
           :code $ quote
             defn string+ (? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 check-keys "|checking string+" options $ [] :nonblank? :re
                 {} (:lilac-type :string)
                   :re $ option:unwrap-or (get options :re) nil
@@ -272,7 +272,7 @@
           :code $ quote
             defn tag+ (? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 {} (:lilac-type :tag) (:options options)
           :examples $ []
           :schema $ :: 'Dynamic
@@ -280,7 +280,7 @@
           :code $ quote
             defn tuple+ (items ? arg)
               let
-                  options $ option:unwrap-or arg ({})
+                  options $ if (nil? arg) ({}) arg
                 assert "|expects items of tuple+ in vector" $ enum? items
                 check-keys "|checking tuple+" options $ [] :in-list? :check-size?
                 {} (:lilac-type :tuple) (:items items) (:options options)
@@ -350,13 +350,14 @@
                   method $ option:unwrap-or (get rule :fn) nil
                   next-coord $ append coord 'custom
                   result $ method data rule coord
+                  custom-message $ option:unwrap-or (get result :message) nil
                 if
                   option:unwrap-or (get result :ok?) false
                   , result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                    :message $ ->
-                      option:unwrap-or (get result :message) nil
-                      option:unwrap-or $ get-in rule ([] :options :message)
-                      option:unwrap-or "|failed to validate with custom method"
+                    :message $ if (some? custom-message) custom-message
+                      option:unwrap-or
+                        get-in rule $ [] :options :message
+                        , "|failed to validate with custom method"
           :examples $ []
           :schema $ :: 'Dynamic
         |validate-dict $ %{} 'CodeEntry (:doc |)
@@ -374,8 +375,8 @@
                         (:none) ok-result
                         (:some x0 ys)
                           let
-                              k $ first x0
-                              v $ last x0
+                              k $ option:unwrap-or (first x0) nil
+                              v $ option:unwrap-or (last x0) nil
                               child-coord $ append coord k
                               k-result $ validate-lilac k key-rule child-coord
                               result $ validate-lilac v item-rule child-coord
@@ -430,7 +431,7 @@
           :code $ quote
             defn validate-lilac (data rule ? arg) (; println "|got rule:" rule)
               let
-                  coord $ option:unwrap-or arg ([])
+                  coord $ if (nil? arg) ([]) arg
                   kind $ &map:get rule :lilac-type
                   method $ unsafe-coerce (&map:get core-methods kind) 'Fn
                   user-method $ unsafe-coerce
@@ -544,7 +545,7 @@
                           get-in rule $ [] :options :message
                           , "|found no matched case in \"or\""
                         :branches branches
-                        :next $ last branches
+                        :next $ option:unwrap-or (last branches) nil
                       (r0 rs)
                         let
                             result $ validate-lilac data r0 next-coord
@@ -558,7 +559,7 @@
                   dict $ option:unwrap-or (get rule :dict) nil
                   next-coord $ append coord 'pick-type
                   type-field $ option:unwrap-or (get rule :type-field) nil
-                  data-type $ get data type-field
+                  data-type $ option:unwrap-or (get data type-field) nil
                 if
                   option:none? $ get dict data-type
                   {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
@@ -566,7 +567,7 @@
                       get-in rule $ [] :options :message
                       str "|found no matched type in pick-type: " data-type
                   let
-                      next-rule $ get dict data-type
+                      next-rule $ option:unwrap-or (get dict data-type) nil
                       result $ validate-lilac data next-rule next-coord
                     if
                       option:unwrap-or (get result :ok?) false
@@ -583,10 +584,10 @@
               let
                   coord $ append base-coord 'record
                   pairs $ &map:get rule :pairs
-                  exact-keys? $ option:unwrap-or (&map:get rule :exact-keys?) false
-                  check-keys? $ option:unwrap-or (&map:get rule :check-keys?) false
-                  all-optional? $ option:unwrap-or (&map:get rule :all-optional?) false
-                  default-message $ -> rule (&map:get :options) (&map:get :message)
+                  exact-keys? $ option:unwrap-or (get rule :exact-keys?) false
+                  check-keys? $ option:unwrap-or (get rule :check-keys?) false
+                  all-optional? $ option:unwrap-or (get rule :all-optional?) false
+                  default-message $ -> rule (&map:get :options) (get :message)
                   wanted-keys $ keys pairs
                   existed-keys $ if
                     or (map? data) (struct? data)
@@ -598,10 +599,11 @@
                         (:none) ok-result
                         (:some x0 ys)
                           let
-                              k0 $ first x0
-                              r0 $ last x0
+                              k0 $ option:unwrap-or (first x0) nil
+                              r0 $ option:unwrap-or (last x0) nil
                               child-coord $ append coord k0
-                              v $ get data k0
+                              v $ if (struct? data) (&struct:get data k0)
+                                option:unwrap-or (get data k0) nil
                             if
                               and all-optional? $ nil? v
                               recur ys
@@ -615,8 +617,10 @@
                   not $ or (map? data)
                     and (struct? data)
                       if
-                        option:some? $ get rule :proto
-                        &struct:matches? (get rule :proto) data
+                        some? $ option:unwrap-or (get rule :proto) nil
+                        &struct:matches?
+                          option:unwrap-or (get rule :proto) nil
+                          , data
                         , true
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                     :message $ option:unwrap-or
@@ -861,6 +865,14 @@
               = x $ option:unwrap-or (get obj :ok?) false
           :examples $ []
           :schema $ :: 'Dynamic
+        |deftest $ %{} 'CodeEntry (:doc |)
+          :code $ quote
+            defmacro deftest (name & body)
+              quasiquote $ defn (~ name) () (~@ body)
+          :examples $ []
+          :schema $ :: 'Macro
+            {} (:rest 'Dynamic)
+              :args $ [] 'Dynamic
         |lilac-good-number+ $ %{} 'CodeEntry (:doc |)
           :code $ quote
             deflilac lilac-good-number+ (n)
@@ -869,7 +881,7 @@
           :schema $ :: 'Dynamic
         |main! $ %{} 'CodeEntry (:doc |)
           :code $ quote
-            defn main! () (reset! *quit-on-failure? true) (run-tests)
+            defn main! () $ run-tests
           :examples $ []
           :schema $ :: 'Dynamic
         |reload! $ %{} 'CodeEntry (:doc |)
@@ -1306,13 +1318,22 @@
                     {}
           :examples $ []
           :schema $ :: 'Dynamic
+        |testing $ %{} 'CodeEntry (:doc |)
+          :code $ quote
+            defmacro testing (message & body)
+              quasiquote $ do
+                echo $ ~ message
+                ~@ body
+          :examples $ []
+          :schema $ :: 'Macro
+            {} (:rest 'Dynamic)
+              :args $ [] 'String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote
           ns lilac.test $ :require
-            calcit-test.core :refer $ deftest is testing
+            calcit.test :refer $ is
             lilac.core :refer $ validate-lilac deflilac optional+ tag+ bool+ number+ string+ custom+ tuple+ list+ record+ enum+ dict+ any+ and+ nil+ or+ is+ pick-type+ register-custom-rule!
             lilac.router :refer $ lilac-router+ router-data
-            calcit-test.core :refer $ *quit-on-failure?
     |lilac.util $ %{} 'FileEntry
       :defs $ {}
         |check-keys $ %{} 'CodeEntry (:doc |)
