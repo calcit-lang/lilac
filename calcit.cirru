@@ -312,7 +312,7 @@
           :code $ quote
             defn validate-any (data rule base-coord)
               let
-                  coord $ append base-coord 'number
+                  coord $ append base-coord 'any
                   something? $ option:unwrap-or (get rule :some?) false
                 if something?
                   if (some? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
@@ -513,7 +513,7 @@
                     , ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                       :message $ option:unwrap-or
                         get-in rule $ [] :options :message
-                        str "|expects number not in the range, got " $ preview-data data
+                        str "|expects number within the min/max range, got " $ preview-data data
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                     :message $ option:unwrap-or
                       get-in rule $ [] :options :message
@@ -683,6 +683,10 @@
                             get-in rule $ [] :options :message
                             str "|expects a string in " re "|, got " $ preview-data data
                         eprintln "|re-matches is not supported"
+                        {} (:ok? false) (:data data) (:rule rule) (:coord coord)
+                          :message $ option:unwrap-or
+                            get-in rule $ [] :options :message
+                            str "|re-matches is not supported, got " $ preview-data data
                     (some? nonblank?)
                       if
                         and nonblank? $ = | (trim data)
@@ -936,7 +940,7 @@
                       and (> x 10) (< x 20)
                       {} $ :ok? true
                       {} (:ok? false)
-                        :message $ str "|expects number between 10 amd 20, got " x
+                        :message $ str "|expects number between 10 and 20, got " x
                 testing "|validating number with custom function" $ is
                   =ok true $ validate-lilac 11 (custom+ method-1)
                 testing "|validating number with custom function" $ is
@@ -947,7 +951,7 @@
                       and (> data 10) (< data 20)
                       {} $ :ok? true
                       {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                        :message $ str "|expects number between 10 amd 20, got " data
+                        :message $ str "|expects number between 10 and 20, got " data
                   method-2+ $ fn ()
                     {} $ :lilac-type :method-2
                 register-custom-rule! :method-2 validate-method-2
