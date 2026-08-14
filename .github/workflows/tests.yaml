@@ -25,7 +25,7 @@ jobs:
       - name: Install deps
         run: yarn install --immutable
 
-      - uses: calcit-lang/setup-cr@0.0.8
+      - uses: calcit-lang/setup-cr@0.0.9
 
       - name: "test"
         run: caps --ci && mode=dev cr --entry test
