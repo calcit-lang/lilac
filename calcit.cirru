@@ -1,10 +1,12 @@
 
-{} (:about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `cr query` to inspect and `cr edit`/`cr tree` to modify. Run `cr docs agents --full` first. Manual edits must follow format and schema conventions, then run `cr edit format`.") (:package |lilac) (:version |0.5.2)
+{} (:about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `cr query` to inspect and `cr edit`/`cr tree` to modify. Run `cr docs agents --full` first. Manual edits must follow format and schema conventions, then run `cr edit format`.") (:package |lilac)
   :entries $ {}
     :default $ {} (:description |) (:init-fn 'lilac.main/main!) (:mode :native) (:reload-fn 'lilac.main/reload!)
+      :feature-policy $ {}
       :modules $ []
       :type-slots $ {}
     :test $ {} (:description |) (:init-fn 'lilac.test/main!) (:mode :native) (:reload-fn 'lilac.test/reload!)
+      :feature-policy $ {}
       :modules $ []
       :type-slots $ {}
   :files $ {}
