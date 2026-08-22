@@ -26,11 +26,11 @@ Difference:
 Run with Calcit:
 
 ```bash
-cr
+calcit calcit.cirru
 
-cr --entry test
+calcit calcit.cirru --entry test
 
-cr --entry test -w
+calcit -w calcit.cirru --entry test
 ```
 
 ### Workflow
