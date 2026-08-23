@@ -25,7 +25,7 @@ jobs:
       - name: Install deps
         run: yarn install --immutable
 
-      - uses: calcit-lang/setup-calcit@3b5843cb725963bb4ee158cfe49dad877134963e # v1
+      - uses: calcit-lang/setup-calcit@v1
 
       - name: "test"
         run: caps --ci && mode=dev calcit calcit.cirru --entry test

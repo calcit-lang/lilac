@@ -33,7 +33,7 @@
                   options $ if (nil? arg) ({}) arg
                 check-keys "|checking any+" options $ [] :some?
                 {} (:lilac-type :any) (:options options)
-                  :some? $ option:unwrap-or (get options :some?) nil
+                  :some? $ get-or options :some? nil
           :examples $ []
           :schema $ :: 'Dynamic
         |bool+ $ %{} 'CodeEntry (:doc |)
@@ -76,13 +76,9 @@
                       ~ result-v
                       validate-lilac (~ data) (~ rule)
                     when
-                      not $ option:unwrap-or
-                        get (~ result-v) :ok?
-                        , false
+                      not $ get-or (~ result-v) :ok? false
                       println
-                        option:unwrap-or
-                          get (~ result-v) :formatted-message
-                          , nil
+                        get-or (~ result-v) :formatted-message nil
                         , &newline $ str "|(dev-check "
                           quote $ ~ data
                           , "| "
@@ -92,8 +88,7 @@
           :schema $ :: 'Dynamic
         |dev? $ %{} 'CodeEntry (:doc |)
           :code $ quote
-            def dev? $ = |dev
-              option:unwrap-or (get-env |mode) |release
+            def dev? $ = |dev (get-env-or |mode |release)
           :examples $ []
           :schema $ :: 'Dynamic
         |dict+ $ %{} 'CodeEntry (:doc |)
@@ -127,17 +122,15 @@
           :code $ quote
             defn format-message (acc result)
               if (nil? result) acc $ let
-                  message $ str
-                    option:unwrap-or (get result :message) nil
-                    , "| at "
-                      filter-not
-                        option:unwrap-or (get result :coord) ([])
-                        , symbol?
+                  message $ str (get-or result :message nil) "| at "
+                    filter-not
+                      get-or result :coord $ []
+                      , symbol?
                 recur
                   str acc
                     if (some? acc) &newline |
                     , message
-                  option:unwrap-or (get result :next) nil
+                  get-or result :next nil
           :examples $ []
           :schema $ :: 'Dynamic
         |is+ $ %{} 'CodeEntry (:doc |)
@@ -155,7 +148,7 @@
                   options $ if (nil? arg) ({}) arg
                 check-keys "|checking list+" options $ [] :allow-seq?
                 {} (:lilac-type :list) (:item item) (:options options)
-                  :allow-seq? $ option:unwrap-or (get options :allow-seq?) nil
+                  :allow-seq? $ get-or options :allow-seq? nil
           :examples $ []
           :schema $ :: 'Dynamic
         |nil+ $ %{} 'CodeEntry (:doc |)
@@ -177,8 +170,8 @@
                   options $ if (nil? arg) ({}) arg
                 check-keys "|checking number+" options $ [] :max :min
                 {} (:lilac-type :number)
-                  :max $ option:unwrap-or (get options :max) nil
-                  :min $ option:unwrap-or (get options :min) nil
+                  :max $ get-or options :max nil
+                  :min $ get-or options :min nil
                   :options options
           :examples $ []
           :schema $ :: 'Dynamic
@@ -211,7 +204,7 @@
                   options $ if (nil? arg) ({}) arg
                 check-keys "|checking pick-type+" options $ [] :type-field
                 {} (:lilac-type :pick-type) (:dict dict) (:options options)
-                  :type-field $ option:unwrap-or (get options :type-field) :type
+                  :type-field $ get-or options :type-field :type
           :examples $ []
           :schema $ :: 'Dynamic
         |re+ $ %{} 'CodeEntry (:doc |)
@@ -229,10 +222,10 @@
                   options $ if (nil? arg) ({}) arg
                 check-keys "|checking record+" options $ [] :exact-keys? :check-keys? :all-optional? :proto
                 {} (:lilac-type :record) (:pairs pairs) (:options options)
-                  :exact-keys? $ option:unwrap-or (get options :exact-keys?) false
-                  :check-keys? $ option:unwrap-or (get options :check-keys?) false
-                  :all-optional? $ option:unwrap-or (get options :all-optional?) false
-                  :proto $ option:unwrap-or (get options :proto) nil
+                  :exact-keys? $ get-or options :exact-keys? false
+                  :check-keys? $ get-or options :check-keys? false
+                  :all-optional? $ get-or options :all-optional? false
+                  :proto $ get-or options :proto nil
           :examples $ []
           :schema $ :: 'Dynamic
         |register-custom-rule! $ %{} 'CodeEntry (:doc |)
@@ -259,8 +252,8 @@
                   options $ if (nil? arg) ({}) arg
                 check-keys "|checking string+" options $ [] :nonblank? :re
                 {} (:lilac-type :string)
-                  :re $ option:unwrap-or (get options :re) nil
-                  :nonblank? $ option:unwrap-or (get options :nonblank?) nil
+                  :re $ get-or options :re nil
+                  :nonblank? $ get-or options :nonblank? nil
                   :options options
           :examples $ []
           :schema $ :: 'Dynamic
@@ -286,7 +279,7 @@
                 assert "|expects items of tuple+ in vector" $ enum? items
                 check-keys "|checking tuple+" options $ [] :in-list? :check-size?
                 {} (:lilac-type :tuple) (:items items) (:options options)
-                  :check-size? $ option:unwrap-or (get options :check-size?) nil
+                  :check-size? $ get-or options :check-size? nil
           :examples $ []
           :schema $ :: 'Dynamic
         |validate-and $ %{} 'CodeEntry (:doc |)
@@ -304,9 +297,7 @@
                             result $ validate-lilac data r0 next-coord
                           if (&map:get result :ok?) (recur rs)
                             {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                              :message $ option:unwrap-or
-                                get-in rule $ [] :options :message
-                                , "|failed validating in \"and\""
+                              :message $ get-in-or rule ([] :options :message) "|failed validating in \"and\""
                               :next result
           :examples $ []
           :schema $ :: 'Dynamic
@@ -315,11 +306,10 @@
             defn validate-any (data rule base-coord)
               let
                   coord $ append base-coord 'any
-                  something? $ option:unwrap-or (get rule :some?) false
+                  something? $ get-or rule :some? false
                 if something?
                   if (some? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
+                    :message $ get-in-or rule ([] :options :message)
                       str "|expects something, got " $ preview-data data
                   , ok-result
           :examples $ []
@@ -329,8 +319,7 @@
             defn validate-bool (data rule coord)
               if (bool? data) ok-result $ {} (:ok? false) (:data data) (:rule rule)
                 :coord $ append coord 'bool
-                :message $ option:unwrap-or
-                  get-in rule $ [] :options :message
+                :message $ get-in-or rule ([] :options :message)
                   str "|expects a bool, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -340,7 +329,7 @@
               let
                   lazy-fn $ &map:get rule :fn
                   next-coord $ append coord
-                    turn-symbol $ option:unwrap-or (get rule :name) nil
+                    turn-symbol $ get-or rule :name nil
                   next-rule $ lazy-fn & (&map:get rule :args)
                 validate-lilac data next-rule next-coord
           :examples $ []
@@ -349,17 +338,13 @@
           :code $ quote
             defn validate-custom (data rule coord)
               let
-                  method $ option:unwrap-or (get rule :fn) nil
+                  method $ get-or rule :fn nil
                   next-coord $ append coord 'custom
                   result $ method data rule coord
-                  custom-message $ option:unwrap-or (get result :message) nil
-                if
-                  option:unwrap-or (get result :ok?) false
-                  , result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                    :message $ if (some? custom-message) custom-message
-                      option:unwrap-or
-                        get-in rule $ [] :options :message
-                        , "|failed to validate with custom method"
+                  custom-message $ get-or result :message nil
+                if (get-or result :ok? false) result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
+                  :message $ if (some? custom-message) custom-message
+                    get-in-or rule ([] :options :message) "|failed to validate with custom method"
           :examples $ []
           :schema $ :: 'Dynamic
         |validate-dict $ %{} 'CodeEntry (:doc |)
@@ -377,8 +362,8 @@
                         (:none) ok-result
                         (:some x0 ys)
                           let
-                              k $ option:unwrap-or (first x0) nil
-                              v $ option:unwrap-or (last x0) nil
+                              k $ first-or x0 nil
+                              v $ last-or x0 nil
                               child-coord $ append coord k
                               k-result $ validate-lilac k key-rule child-coord
                               result $ validate-lilac v item-rule child-coord
@@ -386,8 +371,7 @@
                               if (&map:get result :ok?) (recur ys) result
                               , k-result
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
+                    :message $ get-in-or rule ([] :options :message)
                       str "|expects a dict, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -398,8 +382,7 @@
                   coord $ append base-coord 'enum
                   items $ &map:get rule :items
                 if (includes? items data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ option:unwrap-or
-                    get-in rule $ [] :options :message
+                  :message $ get-in-or rule ([] :options :message)
                     str "|expects value of " (to-lispy-string items) "|, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -409,8 +392,7 @@
               let
                   next-coord $ append coord 'fn
                 if (fn? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                  :message $ option:unwrap-or
-                    get-in rule $ [] :options :message
+                  :message $ get-in-or rule ([] :options :message)
                     str "|expects a function, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -420,12 +402,11 @@
               let
                   coord $ append base-coord 'is
                 if
-                  = data $ option:unwrap-or (get rule :item) nil
+                  = data $ get-or rule :item nil
                   , ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
+                    :message $ get-in-or rule ([] :options :message)
                       str "|expects just "
-                        preview-data $ option:unwrap-or (get rule :item) nil
+                        preview-data $ get-or rule :item nil
                         , "|, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -469,8 +450,7 @@
                               recur xss $ inc idx
                               , result
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
+                    :message $ get-in-or rule ([] :options :message)
                       str "|expects a list, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -480,8 +460,7 @@
               let
                   next-coord $ append coord 'nil
                 if (nil? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                  :message $ option:unwrap-or
-                    get-in rule $ [] :options :message
+                  :message $ get-in-or rule ([] :options :message)
                     str "|expects a nil, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -494,9 +473,7 @@
                   result $ validate-lilac data item coord
                 if (&map:get result :ok?)
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
-                      , "|expects a inverted value in \"not\""
+                    :message $ get-in-or rule ([] :options :message) "|expects a inverted value in \"not\""
                     :next result
                   , ok-result
           :examples $ []
@@ -514,12 +491,10 @@
                       if (some? min-v) (>= data min-v) true
                       if (some? max-v) (<= data max-v) true
                     , ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                      :message $ option:unwrap-or
-                        get-in rule $ [] :options :message
+                      :message $ get-in-or rule ([] :options :message)
                         str "|expects number within the min/max range, got " $ preview-data data
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
+                    :message $ get-in-or rule ([] :options :message)
                       str "|expects a number, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -543,11 +518,9 @@
                   fn (xs branches)
                     list-match xs
                       () $ {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                        :message $ option:unwrap-or
-                          get-in rule $ [] :options :message
-                          , "|found no matched case in \"or\""
+                        :message $ get-in-or rule ([] :options :message) "|found no matched case in \"or\""
                         :branches branches
-                        :next $ option:unwrap-or (last branches) nil
+                        :next $ last-or branches nil
                       (r0 rs)
                         let
                             result $ validate-lilac data r0 next-coord
@@ -558,26 +531,20 @@
           :code $ quote
             defn validate-pick-type (data rule coord)
               let
-                  dict $ option:unwrap-or (get rule :dict) nil
+                  dict $ get-or rule :dict nil
                   next-coord $ append coord 'pick-type
-                  type-field $ option:unwrap-or (get rule :type-field) nil
-                  data-type $ option:unwrap-or (get data type-field) nil
+                  type-field $ get-or rule :type-field nil
+                  data-type $ get-or data type-field nil
                 if
                   option:none? $ get dict data-type
                   {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
-                      str "|found no matched type in pick-type: " data-type
+                    :message $ get-in-or rule ([] :options :message) (str "|found no matched type in pick-type: " data-type)
                   let
-                      next-rule $ option:unwrap-or (get dict data-type) nil
+                      next-rule $ get-or dict data-type nil
                       result $ validate-lilac data next-rule next-coord
-                    if
-                      option:unwrap-or (get result :ok?) false
-                      , result $ {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
-                        :message $ option:unwrap-or
-                          get-in rule $ [] :options :message
-                          str "|failed to match in pick-type"
-                        :next result
+                    if (get-or result :ok? false) result $ {} (:ok? false) (:coord next-coord) (:rule rule) (:data data)
+                      :message $ get-in-or rule ([] :options :message) (str "|failed to match in pick-type")
+                      :next result
           :examples $ []
           :schema $ :: 'Dynamic
         |validate-record $ %{} 'CodeEntry (:doc |)
@@ -586,9 +553,9 @@
               let
                   coord $ append base-coord 'record
                   pairs $ &map:get rule :pairs
-                  exact-keys? $ option:unwrap-or (get rule :exact-keys?) false
-                  check-keys? $ option:unwrap-or (get rule :check-keys?) false
-                  all-optional? $ option:unwrap-or (get rule :all-optional?) false
+                  exact-keys? $ get-or rule :exact-keys? false
+                  check-keys? $ get-or rule :check-keys? false
+                  all-optional? $ get-or rule :all-optional? false
                   default-message $ -> rule (&map:get :options) (get :message)
                   wanted-keys $ keys pairs
                   existed-keys $ if
@@ -601,32 +568,25 @@
                         (:none) ok-result
                         (:some x0 ys)
                           let
-                              k0 $ option:unwrap-or (first x0) nil
-                              r0 $ option:unwrap-or (last x0) nil
+                              k0 $ first-or x0 nil
+                              r0 $ last-or x0 nil
                               child-coord $ append coord k0
-                              v $ if (struct? data) (&struct:get data k0)
-                                option:unwrap-or (get data k0) nil
+                              v $ if (struct? data) (&struct:get data k0) (get-or data k0 nil)
                             if
                               and all-optional? $ nil? v
                               recur ys
                               let
                                   result $ validate-lilac v r0 child-coord
-                                if
-                                  option:unwrap-or (get result :ok?) false
-                                  recur ys
-                                  , result
+                                if (get-or result :ok? false) (recur ys) result
                 if
                   not $ or (map? data)
                     and (struct? data)
                       if
-                        some? $ option:unwrap-or (get rule :proto) nil
-                        &struct:matches?
-                          option:unwrap-or (get rule :proto) nil
-                          , data
+                        some? $ get-or rule :proto nil
+                        &struct:matches? (get-or rule :proto nil) data
                         , true
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
+                    :message $ get-in-or rule ([] :options :message)
                       str "|expects a record, got " $ preview-data data
                   cond
                     exact-keys? $ if (seq-equal existed-keys wanted-keys) (check-values)
@@ -651,7 +611,7 @@
           :code $ quote
             defn validate-set (data rule base-coord)
               let
-                  item-rule $ option:unwrap-or (get rule :item) nil
+                  item-rule $ get-or rule :item nil
                   coord $ append base-coord 'set
                 if (set? data)
                   loop
@@ -663,13 +623,11 @@
                         let
                             child-coord $ append coord idx
                             result $ validate-lilac x0 item-rule child-coord
-                          if
-                            option:unwrap-or (get result :ok?) false
+                          if (get-or result :ok? false)
                             recur xss $ inc idx
                             , result
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
+                    :message $ get-in-or rule ([] :options :message)
                       str "|expects a set, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -679,32 +637,28 @@
               let
                   coord $ append base-coord 'string
                   re $ &map:get rule :re
-                  nonblank? $ option:unwrap-or (get rule :nonblank?) false
+                  nonblank? $ get-or rule :nonblank? false
                 if (string? data)
                   cond
                       some? re
                       do
                         ; if (re-matches data re) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                          :message $ option:unwrap-or
-                            get-in rule $ [] :options :message
+                          :message $ get-in-or rule ([] :options :message)
                             str "|expects a string in " re "|, got " $ preview-data data
                         eprintln "|re-matches is not supported"
                         {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                          :message $ option:unwrap-or
-                            get-in rule $ [] :options :message
+                          :message $ get-in-or rule ([] :options :message)
                             str "|re-matches is not supported, got " $ preview-data data
                     (some? nonblank?)
                       if
                         and nonblank? $ = | (trim data)
                         {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                          :message $ option:unwrap-or
-                            get-in rule $ [] :options :message
+                          :message $ get-in-or rule ([] :options :message)
                             str "|expects nonblank string , got " $ preview-data data
                         , ok-result
                     true ok-result
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                    :message $ option:unwrap-or
-                      get-in rule $ [] :options :message
+                    :message $ get-in-or rule ([] :options :message)
                       str "|expected a string, but got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -714,8 +668,7 @@
               let
                   coord $ append base-coord 'symbol
                 if (symbol? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord coord)
-                  :message $ option:unwrap-or
-                    get-in rule $ [] :options :message
+                  :message $ get-in-or rule ([] :options :message)
                     str "|expects a symbol, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -725,8 +678,7 @@
               let
                   next-coord $ append coord 'tag
                 if (tag? data) ok-result $ {} (:ok? false) (:data data) (:rule rule) (:coord next-coord)
-                  :message $ option:unwrap-or
-                    get-in rule $ [] :options :message
+                  :message $ get-in-or rule ([] :options :message)
                     str "|expects a tag, got " $ preview-data data
           :examples $ []
           :schema $ :: 'Dynamic
@@ -749,13 +701,10 @@
                               y0 $ &enum:nth data idx
                               child-coord $ append next-coord idx
                               result $ validate-lilac y0 r0 child-coord
-                            if
-                              option:unwrap-or (get result :ok?) false
+                            if (get-or result :ok? false)
                               recur $ inc idx
                               {} (:ok? false) (:coord next-coord) (:rule rule) (:data y0)
-                                :message $ option:unwrap-or
-                                  get-in rule $ [] :options :message
-                                  , "|failed validating in \"tuple\""
+                                :message $ get-in-or rule ([] :options :message) "|failed validating in \"tuple\""
                                 :next result
                           {} $ :ok? true
                     {} (:ok? false) (:data data) (:rule rule) (:coord coord)
@@ -784,10 +733,8 @@
           :code $ quote
             defn run-demo! () $ let
                 result $ validate-lilac router-data (lilac-router+)
-              if
-                option:unwrap-or (get result :ok?) false
-                println "|Passed validation!"
-                println $ option:unwrap-or (get result :formatted-message) nil
+              if (get-or result :ok? false) (println "|Passed validation!")
+                println $ get-or result :formatted-message nil
               dev-check |1 $ number+
                 {} $ :x 1
               ; run-tests
@@ -864,7 +811,7 @@
         |=ok $ %{} 'CodeEntry (:doc |)
           :code $ quote
             defn =ok (x obj)
-              = x $ option:unwrap-or (get obj :ok?) false
+              = x $ get-or obj :ok? false
           :examples $ []
           :schema $ :: 'Dynamic
         |deftest $ %{} 'CodeEntry (:doc |)
