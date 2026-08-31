@@ -3,18 +3,20 @@ Lilac in Calcit
 ----
 
 > [!WARNING]
-> **Deprecated for new application design.** Lilac receives compatibility
-> maintenance for existing consumers, but new projects should use Calcit's built-in typed
+> **Frozen legacy library; deprecated for new application design.** Lilac receives only
+> critical compatibility or security fixes for named existing consumers. Do not open
+> routine Calcit-version, dependency, formatting, Actions, or documentation upgrade PRs.
+> New projects should use Calcit's built-in typed
 > data model instead: define domain values with typed Structs and Enums, use
 > `Option` for values that may be absent, and use `Result` for operations that
 > can fail. This gives consumers compiler-checked contracts without a separate
 > runtime validation DSL.
 >
-> Existing users should plan a gradual migration away from Lilac. Pin a released
-> compatibility version while replacing public validation rules at module
+> Existing users should plan a gradual migration away from Lilac. Pin `0.5.8`
+> while replacing public validation rules at module
 > boundaries, then remove the dependency once callers use the typed Calcit
-> interfaces directly. Compatibility releases keep the module loadable by the
-> current Calcit toolchain but do not expand the validation DSL.
+> interfaces directly. The repository remains unarchived only because Phlox, Skir,
+> Serve JSON, and other existing projects still import the runtime validation DSL.
 
 Difference:
 
@@ -41,9 +43,12 @@ Origin https://github.com/mvc-works/lilac
 
 ### 中文说明
 
-Lilac 对新应用设计已进入 deprecated 状态；新项目应优先使用 Calcit 的
-Struct/Enum、traits、Option 与 Result。仓库仍会为现有依赖方提供兼容性维护，
-确保已发布版本能够被当前 Calcit 工具链加载，但不会继续扩展运行时校验 DSL。
+Lilac 对新应用设计已进入 frozen legacy / deprecated 状态；新项目应优先使用 Calcit 的
+Struct/Enum、traits、Option、Result，以及 `decode-map-as` / `try-decode-map-as`。
+由于 Phlox、Skir、Serve JSON 等现有项目仍真实导入 runtime validation DSL，仓库暂不归档；
+但禁止例行追随 Calcit、依赖、格式、Actions 或文档升级。仅在具名消费者确实失败或出现关键
+安全问题时维护，并优先推动消费者迁移。
+
 
 ### License
 
