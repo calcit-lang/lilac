@@ -348,7 +348,7 @@
               let
                   lazy-fn $ &map:get rule :fn
                   next-coord $ append coord
-                    turn-symbol $ option:unwrap-or (get rule :name) nil
+                    turn-symbol $ option:unwrap-or (get rule :name) |unknown
                   next-rule $ lazy-fn & (&map:get rule :args)
                 validate-lilac data next-rule next-coord
           :examples $ []
@@ -357,7 +357,7 @@
           :code $ quote
             defn validate-custom (data rule coord)
               let
-                  method $ option:unwrap-or (get rule :fn) nil
+                  method $ assert-type (&map:get rule :fn) 'Fn
                   next-coord $ append coord 'custom
                   result $ method data rule coord
                   custom-message $ option:unwrap-or (get result :message) nil
@@ -599,9 +599,19 @@
                   all-optional? $ option:unwrap-or (get rule :all-optional?) false
                   default-message $ -> rule (&map:get :options) (get :message)
                   wanted-keys $ keys pairs
-                  existed-keys $ if
-                    or (map? data) (struct? data)
-                    keys data
+                  existed-keys $ cond
+                      map? data
+                      keys $ assert-type data 'Map
+                    (struct? data)
+                      loop
+                          idx 0
+                          acc $ []
+                        if
+                          < idx $ &struct:count (assert-type data 'Struct)
+                          recur (inc idx)
+                            append acc $ &struct:field-tag (assert-type data 'Struct) idx
+                          , acc
+                    true $ []
                   check-values $ fn ()
                     loop
                         xs $ to-pairs pairs
@@ -626,11 +636,9 @@
                 if
                   not $ or (map? data)
                     and (struct? data)
-                      if
-                        some? $ option:unwrap-or (get rule :proto) nil
-                        &struct:matches?
-                          option:unwrap-or (get rule :proto) nil
-                          , data
+                      if-let
+                        proto $ get rule :proto
+                        if (nil? proto) true $ &struct:matches? (assert-type proto 'Struct) data
                         , true
                   {} (:ok? false) (:data data) (:rule rule) (:coord coord)
                     :message $ option:unwrap-or
